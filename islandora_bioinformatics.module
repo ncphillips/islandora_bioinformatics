@@ -5,6 +5,7 @@ ini_set('display_startup_errors', TRUE);
 
 module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_functions');
 
+// MENU
 /**
  * Implements hook_menu()
  */
@@ -14,6 +15,7 @@ function islandora_bioinformatics_menu(){
   return $urls;
 }
 
+// THEME
 /**
  * Implements hook_theme()
  */
@@ -48,6 +50,7 @@ function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
   return $themes;
 }
 
+// FEDORA OBJECTS
 /**
  * Implements hook_islandora_required_objects()
  */
@@ -113,6 +116,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
   );
 }
 
+// DRUPAL FORMS
 /**
  * Implements hook_forms()
  */
@@ -140,4 +144,61 @@ function islandora_bioinformatics_forms($form_id, $args) {
   }
 
   return $forms;
+}
+
+// FORM BUILDER FORMS
+/**
+ * Implements hook_islandora_xml_form_builder_forms()
+ */
+function islandora_bioinformatics_islandora_xml_form_builder_forms() {
+  $module_path = drupal_get_path('module', 'islandora_bioinformatics');
+
+  $fb_forms = array();
+
+  // Person Forms
+  $fb_forms['Person MADS Form'] = array(
+    'form_file' => "$module_path/xml/forms/person_mads_form.xml",
+  );
+
+  /** @todo Person EML form. */
+  /** @todo Person MADS to EML XSLT. */
+
+  // Project Forms
+  $fb_forms['Project MADS Form'] = array(
+    'form_file' => "$module_path/xml/forms/project_mads_form.xml",
+  );
+
+  /** @todo Project EML form. */
+  /** @todo Project MADS to EML XSLT. */
+
+  return $fb_forms;
+}
+
+/**
+ * Implements hook_islandora_xml_form_builder_form_associations()
+ */
+function islandora_bioinformatics_islandora_xml_form_builder_form_associations() {
+  $module_path = drupal_get_path('module', 'islandora_bioinformatics');
+
+  $form_associations = array();
+
+  $form_associations['islandora_bioinformatics_person_mads'] = array(
+    'content_model' => 'islandora:person_cmodel',
+    'form_name' => 'Person MADS Form',
+    'dsid' => 'MADS',
+    'title_field' => array('authority', 'titleInfo', 'title'),
+    'transform' => 'No Transform',
+    'template' => '',
+  );
+
+  $form_associations['islandora_bioinformatics_project_mads'] = array(
+    'content_model' => 'islandora:project_cmodel',
+    'form_name' => 'Project MADS Form',
+    'dsid' => 'MADS',
+    'title_field' => array('authority', 'titleInfo', 'title'),
+    'transform' => 'No Transform',
+    'template' => '',
+  );
+
+  return $form_associations;
 }
