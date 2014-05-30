@@ -1,0 +1,140 @@
+<?php
+
+drupal_load_include('inc', 'islandora_bioinformatics', 'user_person_sync');
+
+/**
+ * Implements hook_menu()
+ */
+function islandora_bioinformatics_menu(){
+  $urls = array();
+
+  return $urls;
+}
+
+/**
+ * Implements hook_theme()
+ */
+function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
+  $themes = array();
+
+
+  $themes['islandora_lab_object'] = array(
+    'file' => 'theme/theme.inc',
+    'template' => 'theme/islandora_lab_object',
+    'variables' => array(
+      'object' => NULL,
+    ),
+  );
+
+  $themes['islandora_project']    = array(
+    'file' => 'theme/theme.inc',
+    'template' => 'theme/islandora_project',
+    'variables' => array(
+      'object' => NULL,
+    ),
+  );
+
+  $themes['islandora_person']     = array(
+    'file' => 'theme/theme.inc',
+    'template' => 'theme/islandora_person',
+    'variables' => array(
+      'object' => NULL,
+    ),
+  );
+
+  return $themes;
+}
+
+/**
+ * Implements hook_islandora_required_objects()
+ */
+function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $connection) {
+  $module_path = drupal_get_path('module', 'islandora_bioinformatics');
+
+  $objects = array();
+
+  // Constructing CModels
+  //                                      PID                               LABEL       DS-COMPOSITE-MODEL PATH
+  $lab_object = islandora_cmodel_create('islandora:lab_object_cmodel',  'Lab Object', "$module_path/xml/cmodels/lab_object_dscm.xml");
+  $project    = islandora_cmodel_create('islandora:project_cmodel',     'Project',    "$module_path/xml/cmodels/project_dscm.xml");
+  $person     = islandora_cmodel_create('islandora:person_cmodel',      'Person',     "$module_path/xml/cmodels/person_dscm.xml");
+
+  // CModel: person isMemberOf project
+  islandora_cmodel_add_relationship($person, FEDORA_RELS_EXT_URI, 'isMemberOf', $project, FALSE);
+
+  $objects[] = $lab_object;
+  $objects[] = $project;
+  $objects[] = $person;
+
+  // Collections
+  $collections = array(
+    'person_collection' => array(
+      'parent' => 'islandora:root',
+      'label'  => 'People',
+    ),
+    'project_collection' => array(
+      'parent' => 'islandora:root,',
+      'label'  => 'Projects',
+    ),
+    'lab_object_collection' => array(
+      'parent' => 'islandora:root',
+      'label'  => 'Lab Objects'
+    ),
+  );
+
+  foreach($collections as $pid => $details){
+    // Construct the Fedora Object.
+    $collection = $connection->repository->constructObject('islandora:' + $pid);
+    $collection->owner = 'fedoraAdmin';
+    $collection->label = $details['label'];
+    $collection->models = 'islandora:collectionCModel';
+    $collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $details['parent']);
+
+    // Create the COLLECTION_POLICY datastream
+    $collection_policy = $collection->constructDatastream ('COLLECTION_POLICY', 'X');
+    $collection_policy->mimetype = 'text/xml';
+    $collection_policy->setContentFromFile("$module_path/xml/collections/{$pid}_collection_policy.xml", FALSE);
+
+    // Ingest the datastream
+    $collection->ingestDatastream($collection_policy);
+
+    // Add collection to the list of objects.
+    $objects[] = $collection;
+  }
+
+  return array(
+    'islandora_bioinformatics' => array(
+      'title' => 'Islandora Bioinformatics',
+      'objects' => $objects,
+    )
+  );
+}
+
+/**
+ * Implements hook_forms()
+ */
+function islandora_bioinformatics_forms($form_id, $args) {
+
+  $forms = array();
+
+  switch($form_id){
+
+    case 'related_people_form':
+      $cmodel = 'islandora:person_cmodel';
+      $relationships = array(
+        FEDORA_RELS_EXT_URI => array('isMemberOf'),
+      );
+
+      $args[] = $cmodel;
+      $args[] = $relationships;
+
+      $forms['related_people_form'] = array(
+        'callback' => 'related_objects_form',
+        'callback arguments' => $args,
+      );
+
+      break;
+  }
+
+  return $forms;
+}

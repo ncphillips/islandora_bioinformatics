@@ -1,0 +1,26 @@
+<?php
+/**
+ * @file
+ * islandora_bioinformatics.install
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * @see islandora_bioinformatics_islandora_required_objects()
+ */
+function islandora_bioinformatics_install() {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  islandora_install_solution_pack('islandora_bioinformatics');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function islandora_bioinformatics_uninstall() {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  islandora_install_solution_pack('islandora_bioinformatics', 'uninstall');
+  $variables = array('islandora_bioinformatics');
+  array_walk($variables, 'variable_del');
+}
+

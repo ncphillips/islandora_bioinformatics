@@ -1,0 +1,7 @@
+name = "Islandora Bioinformatics"
+description = "The Base SP for the Islandora Bioinformatics Suite"
+dependencies[] = islandora
+files[] = islandora_base_ingest.test
+package = Islandora Bioinformatics
+version = 7.x-dev
+core = 7.x
