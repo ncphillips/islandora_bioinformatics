@@ -45,7 +45,7 @@ function islandora_bioinformatics_islandora_project_cmodel_islandora_ingest_step
     'weight' => 15,
     'type' => 'form',
     'form_id' => 'project_assign_person_form',
-    'module' => 'islandora_bioinformatics_base',
+    'module' => 'islandora_bioinformatics',
     'file' => 'includes/project_assign_person.form.inc',
   );
 

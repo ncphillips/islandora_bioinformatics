@@ -30,7 +30,7 @@ function project_assign_person_form(array $form, array &$form_state) {
     $people[$person_object->id] = $person_object->label;
 
 
-    $relationship = $person_object->relationships->get(FEDORA_RELS_EXT_URI, 'isPartOf', $project_object->id);
+    $relationship = $person_object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf', $project_object->id);
 
     if (!empty($relationship)) {  //if relationship exists, add it to $default_values
       $default_values[$person_object->id] = $person_object->id;
@@ -43,13 +43,7 @@ function project_assign_person_form(array $form, array &$form_state) {
     '#suffix' => '</h1>',
   );
 
-  /*return array(
-    'people' => array(
-      '#type' => 'checkboxes',
-      '#default_value' => $default_values,
-      '#options' => $people,
-      ),
-    );*/
+
 
   $form['people'] = array(
     '#type' => 'checkboxes',
@@ -82,13 +76,15 @@ function project_assign_person_form_submit(array $form, array &$form_state) {
 
   foreach ($result as $person) {
     $person_object = islandora_object_load($person['pid']['value']);  //loads object
-    $person_object->relationships->remove(FEDORA_RELS_EXT_URI, 'isPartOf', $project_object->id);
+    $person_object->relationships->remove(FEDORA_RELS_EXT_URI, 'isMemberOf',
+      $project_object->id);
   }
 
   //for each person checked, create a relationship between the person and the project
   foreach ($person_ids as $id)  {
     //create a relationship within the current person object to the project
     $person_object = islandora_object_load($id); //loads object
-    $person_object->relationships->add(FEDORA_RELS_EXT_URI, 'isPartOf', $project_object->id);
+    $person_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf',
+      $project_object->id);
   }
 }
