@@ -3,9 +3,10 @@ error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
 ini_set('display_startup_errors', TRUE);
 
-module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_helper_functions');
-module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_view_object');
-module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_ingest_steps');
+module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_helper_functions');
+module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_view_object');
+module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_ingest_steps');
+module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callbacks.inc');
 
 // MENU
 /**
@@ -13,6 +14,21 @@ module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_ingest_
  */
 function islandora_bioinformatics_menu(){
   $urls = array();
+
+  /**
+   * ### islandora/object/\%islandora_object/ingest/\%rel_cmodel
+   * Provides a tab on an Islandora Object page that shows a
+   * Related People form.
+   */
+  $urls['islandora/%islandora_object/people'] = array(
+    'title' => 'People',
+    'type' => MENU_LOCAL_TASK,
+    'description' => 'People assigned to this project.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('related_people_form', 2),
+    'access callback' => 'islandora_related_people_access',
+    'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
+  );
 
   return $urls;
 }
