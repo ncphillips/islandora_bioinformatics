@@ -1,6 +1,9 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', TRUE);
+ini_set('display_startup_errors', TRUE);
 
-drupal_load_include('inc', 'islandora_bioinformatics', 'user_person_sync');
+module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_functions');
 
 /**
  * Implements hook_menu()
@@ -60,7 +63,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
   $person     = islandora_cmodel_create('islandora:person_cmodel',      'Person',     "$module_path/xml/cmodels/person_dscm.xml");
 
   // CModel: person isMemberOf project
-  islandora_cmodel_add_relationship($person, FEDORA_RELS_EXT_URI, 'isMemberOf', $project, FALSE);
+  islandora_cmodel_add_relationship($person, FEDORA_RELS_EXT_URI, 'isMemberOf', $project->id, FALSE);
 
   $objects[] = $lab_object;
   $objects[] = $project;
@@ -84,7 +87,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
 
   foreach($collections as $pid => $details){
     // Construct the Fedora Object.
-    $collection = $connection->repository->constructObject('islandora:' + $pid);
+    $collection = $connection->repository->constructObject('islandora:' . $pid);
     $collection->owner = 'fedoraAdmin';
     $collection->label = $details['label'];
     $collection->models = 'islandora:collectionCModel';
@@ -93,7 +96,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
     // Create the COLLECTION_POLICY datastream
     $collection_policy = $collection->constructDatastream ('COLLECTION_POLICY', 'X');
     $collection_policy->mimetype = 'text/xml';
-    $collection_policy->setContentFromFile("$module_path/xml/collections/{$pid}_collection_policy.xml", FALSE);
+    $collection_policy->setContentFromFile("$module_path/xml/collections/{$pid}_policy.xml", FALSE);
 
     // Ingest the datastream
     $collection->ingestDatastream($collection_policy);

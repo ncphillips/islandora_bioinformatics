@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<collection_policy xmlns="http://www.islandora.ca"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Newspaper collection"
-    xsi:schemaLocation="http://www.islandora.ca http://syn.lib.umanitoba.ca/collection_policy.xsd">
+<collection_policy xmlns="http://www.islandora.ca" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Islandora image collection" xsi:schemaLocation="http://www.islandora.ca http://syn.lib.umanitoba.ca/collection_policy.xsd">
   <content_models>
-    <content_model dsid="ISLANDORACM" name="New TIFF" namespace="islandora:collection"
-            pid="islandora:project_cmodel"/>
-    <content_model dsid="ISLANDORACM" name="New TIFF" namespace="islandora:collection"
-            pid="islandora:collectionCModel"/>
+    <content_model dsid="ISLANDORACM" name="Project" namespace="islandora:"
+                   pid="islandora:project_cmodel"></content_model>
   </content_models>
-  <search_terms/>
+  <search_terms></search_terms>
   <relationship>isMemberOfCollection</relationship>
 </collection_policy>
