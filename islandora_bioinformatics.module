@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
 ini_set('display_startup_errors', TRUE);
 
-module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_functions');
+module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_helper_functions');
 module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_view_object');
 
 // MENU
@@ -203,18 +203,5 @@ function islandora_bioinformatics_islandora_xml_form_builder_form_associations()
   return $form_associations;
 }
 
-/**
- * Implements hook_CMODEL_PID_islandora_view_object() for the Person CModel.
- */
-function  islandora_bioinformatics_base_islandora_person_cmodel_islandora_view_object($object) {
-  $output = theme('islandora_person', array('islandora_object' => $object));
-  return array('islandora_person' => $output);
-}
 
-/**
- * Implements hook_CMODEL_PID_islandora_view_object() for the Project CModel.
- */
-function islandora_bioinformatics_base_islandora_project_cmodel_islandora_view_object($object) {
-  $output = theme('islandora_project', array('islandora_object' => $object));
-  return array('islandora_project' => $output);
-}
+
