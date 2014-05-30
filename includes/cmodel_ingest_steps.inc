@@ -9,7 +9,7 @@
 /**
  * Implements hook_islandora_ingest_steps() for the person_cmodel.
  */
-function islandora_bioinformatics_base_islandora_person_cmodel_islandora_ingest_steps(array $form_state) {
+function islandora_bioinformatics_islandora_person_cmodel_islandora_ingest_steps(array $form_state) {
 
   $ingest_steps = array();
 
@@ -28,7 +28,7 @@ function islandora_bioinformatics_base_islandora_person_cmodel_islandora_ingest_
 /**
  * Implements hook_islandora_ingest_steps() for the project_cmodel.
  */
-function islandora_bioinformatics_base_islandora_project_cmodel_islandora_ingest_steps(array $form_state) {
+function islandora_bioinformatics_islandora_project_cmodel_islandora_ingest_steps(array $form_state) {
   $ingest_steps = array();
 
   /** Upload a thumbnail image for this Project.  */
