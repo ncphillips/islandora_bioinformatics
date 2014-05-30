@@ -19,7 +19,7 @@ function islandora_bioinformatics_islandora_person_cmodel_islandora_ingest_steps
     'type' => 'form',
     'form_id' => 'image_upload_form',
     'module' => 'islandora_bioinformatics',
-    'file' => 'includes/image_upload.form.inc',
+    'file' => 'forms/image_upload.form.inc',
   );
 
   return $ingest_steps;
@@ -37,7 +37,7 @@ function islandora_bioinformatics_islandora_project_cmodel_islandora_ingest_step
     'type' => 'form',
     'form_id' => 'image_upload_form',
     'module' => 'islandora_bioinformatics',
-    'file' => 'includes/image_upload.form.inc',
+    'file' => 'forms/image_upload.form.inc',
   );
 
   /** Assign people to this Project. */
@@ -46,7 +46,7 @@ function islandora_bioinformatics_islandora_project_cmodel_islandora_ingest_step
     'type' => 'form',
     'form_id' => 'project_assign_person_form',
     'module' => 'islandora_bioinformatics',
-    'file' => 'includes/project_assign_person.form.inc',
+    'file' => 'forms/project_assign_person.form.inc',
   );
 
   return $ingest_steps;
