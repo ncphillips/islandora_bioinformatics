@@ -4,6 +4,7 @@ ini_set('display_errors', TRUE);
 ini_set('display_startup_errors', TRUE);
 
 module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_functions');
+module_load_include('inc', 'islandora_bioinformatics',  'includes/cmodel_view_object');
 
 // MENU
 /**
