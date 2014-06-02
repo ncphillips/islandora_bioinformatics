@@ -1,9 +1,14 @@
 <?php
 /**
  * @file
- * Handles the uploading of the image file.
  */
 
+/**
+ * image_upload_form
+ *
+ * A form which allows a user to upload an image to be stored in an
+ * Islandora Object's IMG datastream.
+ */
 function image_upload_form(array $form, array &$form_state) {
   $upload_size = min((int) ini_get('post_max_size'), (int) ini_get('upload_max_filesize'));
   $extensions = array('gif png jpg jpeg');
@@ -24,6 +29,11 @@ function image_upload_form(array $form, array &$form_state) {
   );
 }
 
+/**
+ * image_upload_form_submit
+ *
+ * Stores an uploaded image into the Islandora Object's IMG datastream.
+ */
 function image_upload_form_submit(array $form, array &$form_state) {
   $file = file_load($form_state['values']['file']);
   if (!empty($file)) {  //check if a file has been uploaded

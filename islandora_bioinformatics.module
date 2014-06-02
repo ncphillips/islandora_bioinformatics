@@ -3,10 +3,21 @@ error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
 ini_set('display_startup_errors', TRUE);
 
+// Functions for working with CModels
 module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_helper_functions');
+
+// Islandora view object functions.
 module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_view_object');
+
+// Islandora CModel ingest steps
 module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_ingest_steps');
+
+// Page access callbacks
 module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callbacks.inc');
+
+// Drupal Forms
+module_load_include('inc', 'islandora_bioinformatics', 'forms/related_objects.form');
+module_load_include('inc', 'islandora_bioinformatics', 'forms/related_people.form');
 
 // MENU
 /**
@@ -16,13 +27,13 @@ function islandora_bioinformatics_menu(){
   $urls = array();
 
   /**
-   * ### islandora/object/\%islandora_object/ingest/\%rel_cmodel
+   * ### islandora/object/\%islandora_object/people
    * Provides a tab on an Islandora Object page that shows a
    * Related People form.
    *
    * @todo This isn't working.
    */
-  $urls['islandora/%islandora_object/people'] = array(
+  $urls['islandora/object/%islandora_object/people'] = array(
     'title' => 'People',
     'type' => MENU_LOCAL_TASK,
     'description' => 'People assigned to this project.',
