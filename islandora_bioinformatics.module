@@ -16,7 +16,7 @@ module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_ingest_s
 module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callbacks.inc');
 
 // Drupal Forms
-module_load_include('inc', 'islandora_bioinformatics', 'forms/related_objects.form');
+module_load_include('inc', 'islandora_bioinformatics',  'forms/related_objects.form');
 module_load_include('inc', 'islandora_bioinformatics', 'forms/related_people.form');
 
 // MENU
@@ -155,7 +155,7 @@ function islandora_bioinformatics_forms($form_id, $args) {
         FEDORA_RELS_EXT_URI => array('isMemberOf'),
       );
 
-      $args[] = $cmodel;
+      $args[] = array($cmodel);
       $args[] = $relationships;
 
       $forms['related_people_form'] = array(
@@ -225,6 +225,3 @@ function islandora_bioinformatics_islandora_xml_form_builder_form_associations()
 
   return $form_associations;
 }
-
-
-

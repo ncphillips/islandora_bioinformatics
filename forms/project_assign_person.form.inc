@@ -12,23 +12,22 @@ function project_assign_person_form(array $form, array &$form_state) {
 
   $project_object = $form_state['islandora']['objects'][0]; //this is NULL
 
-  //query fedora to retrieve a list of all person objects
+  // Query fedora to retrieve a list of all person objects.
   $query = "SELECT ?pid
-          FROM <#ri>
-          WHERE {
-          ?pid <fedora-model:hasModel> <info:fedora/islandora:person_cmodel> .
-        }";
+            FROM <#ri>
+            WHERE {
+              ?pid <fedora-model:hasModel> <info:fedora/islandora:person_cmodel> .
+            }";
+
   $result = $tuque->repository->ri->sparqlQuery($query, 'unlimited');
 
-  //build the checkboxes form, with default values.
   $people = array();
-  $default_values = array();  //determines which values are automatically selected
+  $default_values = array();  // Determines which people are automatically selected.
   foreach ($result as $person) {
 
     //load the current person object
     $person_object = islandora_object_load($person["pid"]["value"]);
     $people[$person_object->id] = $person_object->label;
-
 
     $relationship = $person_object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf', $project_object->id);
 
@@ -38,11 +37,10 @@ function project_assign_person_form(array $form, array &$form_state) {
   }
 
   $form['header'] = array(
-    '#markup' => 'Manage People in this Project',
+    '#markup' => 'Assign people to this project',
     '#prefix' => '<h1>',
     '#suffix' => '</h1>',
   );
-
 
 
   $form['people'] = array(
