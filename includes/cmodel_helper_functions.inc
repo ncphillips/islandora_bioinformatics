@@ -95,41 +95,68 @@ function islandora_cmodel_remove_relationship($sub, $pred_uri, $pred, $object, $
 }
 
 /**
- * Returns a list of relationships.
  */
 function islandora_cmodel_relationships($cmodel_id, $target_id=NULL, $direction=NULL) {
+  $cmodel_ids = array($cmodel_id);
+  array_merge($cmodel_ids, islandora_cmodel_supertypes($cmodel_id));
+  $rels = array();
 
+  foreach($cmodel_ids as $id){
+    $cm = islandora_cmodel_load($id);
+    $rel = $cm->relationships->get();
+    $rels = drupal_array_merge_deep(array($rels, $rel));
+
+  }
+  return $rels;
 }
 
 
 // Polymorphism
+/**
+ * Islandora CModel Parent
+ *
+ * @param $cmodel_id
+ *
+ * @return array
+ * Contains the PIDs that are parents of $cmodel_id. This array should always
+ * have only one PID.
+ */
 function islandora_cmodel_parent($cmodel_id) {
   $cmodel = islandora_cmodel_load($cmodel_id);
+  $parents = array(); // This should be an array of length 1.
 
   if($cmodel){
-    $rel = $cmodel->relationships->get(ISLANDORA_RELS_EXT_URI, 'hasParentModel');
-    var_dump($rel);
-    if($rel) {
-      $parent = $rel[0]['object']['value'];
-      return $parent;
-    }
+    $rels = $cmodel->relationships->get(ISLANDORA_RELS_EXT_URI,  'hasParentModel');
+
+    foreach($rels as $rel)
+      $parents[] = $rel['object']['value'];
   }
-  return null;
+  return $parents;
 }
 
 /**
- * Returns a list of ancestors, from closest to oldest.
+ * Islandora CModel Supertypes
+ * @param $cmodel_id
+ *
+ * @return array
+ * Contains the PIDs of all CModels that $cmodel_id subtypes from.
  */
 function islandora_cmodel_supertypes($cmodel_id) {
   $cmodel = islandora_cmodel_load($cmodel_id);
-  if ($cmodel) {
+  $supertypes = array();
 
+  if ($cmodel) {
+    $rels = $cmodel->relationships->get(ISLANDORA_RELS_EXT_URI, 'isSubtypeOf');
+
+    $supertypes = array();
+    foreach($rels as $rel){
+      $supertypes[] = $rel['object']['value'];
+    }
 
   }
-  /** @todo Throw error message. */
+
+  return $supertypes;
 }
-
-
 
 /**
  * Creates and returns a Fedora CModel.
@@ -143,15 +170,9 @@ function islandora_cmodel_supertypes($cmodel_id) {
  *
  * @todo Write docs for `islandora_cmodel_create`
  */
-function islandora_cmodel_create($cmodel_id,
-                                 $label,
-                                 $dscm_path = '',
-                                 $parent_id = NULL,
-                                 $owner = 'fedoraAdmin') {
+function islandora_cmodel_create($cmodel_id, $label, $dscm_path = '', $parent_id = NULL, $owner = 'fedoraAdmin') {
 
   $tuque = new IslandoraTuque();
-
-
 
   // If a parent ID is given, but the Fedora Object doesn't exist, or
   // is not a CModel, return NULL.
@@ -175,13 +196,30 @@ function islandora_cmodel_create($cmodel_id,
     $dscm->setContentFromFile($dscm_path, FALSE);
     $cmodel->ingestDatastream($dscm);
   }
+  else {
+    /** @todo Set up a skeleton dscm. */
+  }
+
   // Inherit from parent
-  if ($parent_id)
+  if ($parent_id) {
     $cmodel->relationships->add(ISLANDORA_RELS_EXT_URI, 'hasParentModel', $parent_id);
+
+    // Supertypes
+    $supertypes = array($parent_id);
+    array_merge($supertypes, islandora_cmodel_supertypes($parent_id));
+
+
+    foreach($supertypes as $supertype){
+      $cmodel->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSubtypeOf', $supertype);
+    }
+
+
+  }
 
   return $cmodel;
 
 }
+
 
 /**
  * Adds a datastream entry to the DS-COMPOSITE-MODEL of this Fedora CModel.
