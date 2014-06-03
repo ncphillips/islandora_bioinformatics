@@ -98,46 +98,36 @@ function islandora_cmodel_remove_relationship($sub, $pred_uri, $pred, $object, $
  * Returns a list of relationships.
  */
 function islandora_cmodel_relationships($cmodel_id, $target_id=NULL, $direction=NULL) {
-  $relationships = array();
 
-  $cm_ids[] = $cmodel_id;
-  array_merge($cm_ids, islandora_cmodel_ancestors($cmodel_id));
-
-  /** @todo Merge all relationship arrays into one. */
-  foreach ($cm_ids as $cm_id) {
-    $cm = islandora_cmodel_load($cm_id);
-    drupal_array_merge_deep($relationships, $cm->relationships);
-
-  }
-
-  return $relationships;
 }
 
 
 // Polymorphism
+function islandora_cmodel_parent($cmodel_id) {
+  $cmodel = islandora_cmodel_load($cmodel_id);
+
+  if($cmodel){
+    $rel = $cmodel->relationships->get(null, 'hasParentModel');
+    if($rel) {
+      $parent = $rel[0]['object']['value'];
+      return $parent;
+    }
+  }
+  return null;
+}
+
 /**
  * Returns a list of ancestors, from closest to oldest.
  */
 function islandora_cmodel_supertypes($cmodel_id) {
   $cmodel = islandora_cmodel_load($cmodel_id);
   if ($cmodel) {
-    $ancestors = array($cmodel);
-    $ancestor_ids = array($cmodel_id);
 
-    /** While there are still parent CModels. */
-    while (sizeof($cmodel->models) > 2) {
-      /** Retrieve the parent CModel. */
-      $cmodel = islandora_object_load($cmodel->models[0]);
 
-      /** Append the parent to the list of ancestors. */
-      $ancestors[] = $cmodel;
-      $ancestor_ids[] = $cmodel->id;
-    }
-
-    return $ancestor_ids;
   }
   /** @todo Throw error message. */
 }
+
 
 
 /**

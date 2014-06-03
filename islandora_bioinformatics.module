@@ -13,11 +13,12 @@ module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_view_obj
 module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_ingest_steps');
 
 // Page access callbacks
-module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callbacks.inc');
+module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callbacks');
 
 // Drupal Forms
-module_load_include('inc', 'islandora_bioinformatics',  'forms/related_objects.form');
+module_load_include('inc', 'islandora_bioinformatics', 'forms/related_objects.form');
 module_load_include('inc', 'islandora_bioinformatics', 'forms/related_people.form');
+module_load_include('inc', 'islandora_bioinformatics', 'forms/project_assign_person.form');
 
 // MENU
 /**
@@ -26,22 +27,26 @@ module_load_include('inc', 'islandora_bioinformatics', 'forms/related_people.for
 function islandora_bioinformatics_menu(){
   $urls = array();
 
-  /**
-   * ### islandora/object/\%islandora_object/people
-   * Provides a tab on an Islandora Object page that shows a
-   * Related People form.
-   *
-   * @todo This isn't working.
-   */
   $urls['islandora/object/%islandora_object/people'] = array(
     'title' => 'People',
     'type' => MENU_LOCAL_TASK,
     'description' => 'People assigned to this project.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('related_people_form', 2),
-    'access callback' => TRUE,
-    //'access callback' => 'islandora_related_people_access',
-    //'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
+//    'access callback' => TRUE,
+    'access callback' => 'islandora_related_people_access',
+    'access arguments' => array(array(FEDORA_VIEW_OBJECTS), 2),
+  );
+
+
+  $urls['islandora/object/%islandora_object/people/add'] = array(
+    'title' => 'Assign People',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('project_assign_person_form', 2),
+    'type' => MENU_CALLBACK,
+    //'access callback' => TRUE,
+    'access callback' => 'islandora_related_people_access',
+    'access arguments' => array(array(FEDORA_INGEST), 2),
   );
 
   return $urls;
@@ -150,12 +155,12 @@ function islandora_bioinformatics_forms($form_id, $args) {
   switch($form_id){
 
     case 'related_people_form':
-      $cmodel = 'islandora:person_cmodel';
+      $cmodels = array('islandora:person_cmodel');
       $relationships = array(
         FEDORA_RELS_EXT_URI => array('isMemberOf'),
       );
 
-      $args[] = array($cmodel);
+      $args[] = $cmodels;
       $args[] = $relationships;
 
       $forms['related_people_form'] = array(

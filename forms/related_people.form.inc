@@ -4,7 +4,7 @@
  * Implements hook_form_related_people_form_alter()
  */
 function islandora_bioinformatics_form_related_people_form_alter(&$form, &$form_state) {
-
+  module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
   $object = $form_state['object'];
   $people = $form_state['related_objects'];
@@ -19,16 +19,16 @@ function islandora_bioinformatics_form_related_people_form_alter(&$form, &$form_
     'email' => t('Email'),
   );
 
-  $form['cmodel']['#markup'] = 'Assigned People';
+  unset($form['cmodel']);
 
   $form['add'] = array(
     '#type' => 'markup',
-    '#markup' => l('Add Person', "islandora/object/{$object->id}/people/add"),
+    '#markup' => l('Assign', "islandora/object/{$object->id}/people/add"),
     '#prefix' => '<div class="m-btn green">',
     '#suffix' => '</div>',
   );
 
-  $form['ingest'] = array();
+  unset($form['ingest']);
 
   $people_entries = array();
 

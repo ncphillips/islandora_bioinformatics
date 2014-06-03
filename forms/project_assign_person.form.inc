@@ -7,10 +7,9 @@
 /**
  * Implements hook_form()
  */
-function project_assign_person_form(array $form, array &$form_state) {
+function project_assign_person_form(array $form, array &$form_state, $project) {
   $tuque = new IslandoraTuque();
-
-  $project_object = $form_state['islandora']['objects'][0]; //this is NULL
+  $form_state['object'] = $project;
 
   // Query fedora to retrieve a list of all person objects.
   $query = "SELECT ?pid
@@ -29,7 +28,7 @@ function project_assign_person_form(array $form, array &$form_state) {
     $person_object = islandora_object_load($person["pid"]["value"]);
     $people[$person_object->id] = $person_object->label;
 
-    $relationship = $person_object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf', $project_object->id);
+    $relationship = $person_object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf', $project->id);
 
     if (!empty($relationship)) {  //if relationship exists, add it to $default_values
       $default_values[$person_object->id] = $person_object->id;
@@ -37,7 +36,7 @@ function project_assign_person_form(array $form, array &$form_state) {
   }
 
   $form['header'] = array(
-    '#markup' => 'Assign people to this project',
+    '#markup' => t('Assign people to ' .  $project->label .'.'),
     '#prefix' => '<h1>',
     '#suffix' => '</h1>',
   );
@@ -47,6 +46,11 @@ function project_assign_person_form(array $form, array &$form_state) {
     '#type' => 'checkboxes',
     '#default_value' => $default_values,
     '#options' => $people,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
   );
 
   return $form;
@@ -59,7 +63,7 @@ function project_assign_person_form_submit(array $form, array &$form_state) {
   $tuque = new IslandoraTuque();
 
   //retrieves the relevant fedora project object
-  $project_object = $form_state['islandora']['objects'][0];
+  $project = $form_state['object'];
 
   //get the checkboxes submitted (only those checked are submitted)  
   $person_ids = array_filter($form_state['values']['people']);
@@ -75,7 +79,7 @@ function project_assign_person_form_submit(array $form, array &$form_state) {
   foreach ($result as $person) {
     $person_object = islandora_object_load($person['pid']['value']);  //loads object
     $person_object->relationships->remove(FEDORA_RELS_EXT_URI, 'isMemberOf',
-      $project_object->id);
+      $project->id);
   }
 
   //for each person checked, create a relationship between the person and the project
@@ -83,6 +87,8 @@ function project_assign_person_form_submit(array $form, array &$form_state) {
     //create a relationship within the current person object to the project
     $person_object = islandora_object_load($id); //loads object
     $person_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf',
-      $project_object->id);
+      $project->id);
   }
+
+  $form_state['redirect'] = "islandora/object/{$project->id}/people";
 }

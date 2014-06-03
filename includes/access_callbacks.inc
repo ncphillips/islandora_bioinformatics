@@ -7,11 +7,10 @@ function islandora_related_people_access($permissions, AbstractObject $object) {
     return FALSE;
   }
 
-  /**
+
   if (!islandora_object_has_people($object)) {
     return FALSE;
   }
-   */
 
   for ($i = 0; $i < count($permissions); $i++) {
     if (!islandora_object_access($permissions[$i], $object)) {
@@ -19,4 +18,31 @@ function islandora_related_people_access($permissions, AbstractObject $object) {
     }
   }
   return TRUE;
+}
+
+function islandora_object_has_people($object) {
+  /**
+   * @author Nolan Phillips
+   * @param $object
+   *
+   * This function returns true if the $object passed in might
+   * have Lab Objects related to it.
+   */
+  $cmodel_id = $object->models[0];
+  $query = "
+    PREFIX fedora-model: <info:fedora/fedora-system:def/model#>
+    SELECT ?datarel
+    FROM <#ri>
+    WHERE
+    {
+      {<info:fedora/islandora:person_cmodel> ?datarel <info:fedora/$cmodel_id>} .
+    }
+  ";
+
+  $tuque = new IslandoraTuque();
+  $result = $tuque->repository->ri->sparqlQuery($query, 'unlimited');
+
+  if (sizeof($result) >0)
+    return TRUE;
+  else return false;
 }

@@ -18,7 +18,8 @@ function islandora_object_related_islandora_objects($object, $cmodels=NULL, $rel
    *
    */
 
-  $obj_id = $object->id;  // The Fedora PID of $object.
+//  $obj_id = $object->id;  // The Fedora PID of $object.
+  $obj_id = $object;
   $cmodel_query = '';  // A union of CModel tripples.
 
   $pre = array();  // An associative array of namespace => prefix.
@@ -36,7 +37,7 @@ function islandora_object_related_islandora_objects($object, $cmodels=NULL, $rel
    * may be returned; however, if the set of CModels passed in is empty, then
    * an object is accepted regardless of it's CModel set.
    */
-  if ($cmodels != null) {
+  if ($cmodels) {
     $cmodel_tripples= array();
     foreach ($cmodels as $cmodel)
       $cmodel_tripples[] = "{?pid fedora-model:hasModel <info:fedora/$cmodel>}";
@@ -127,3 +128,5 @@ function islandora_object_related_islandora_objects($object, $cmodels=NULL, $rel
 
   return $related_objects;
 }
+
+
