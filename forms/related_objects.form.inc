@@ -41,25 +41,25 @@ function related_objects_form($form, &$form_state, $object, $cmodels=NULL, $rela
    */
 
 
-  echo '<pre>';
-  var_dump(islandora_cmodel_relationships('islandora:child_cmodel'));
-  echo '</pre>';
 
   module_load_include('inc', 'islandora_bioinformatics', 'includes/sparql_helper_functions');
-  $related_objects = islandora_object_related_islandora_objects($object, $cmodels, $relationships);
+  $related_objects = islandora_object_related_islandora_objects($object,
+    array($cmodeli), $relationships);
 
   $form_state['object'] = $object;
   $form_state['related_objects'] = $related_objects;
   if (isset($cmodels)) $form_state['cmodels'] = $cmodels;
   if (isset($relationships)) $form_state['relationships'] = $relationships;
 
-  $cmodel = islandora_object_load($cmodels[0]);
-
-  $cmodel_label = $cmodel->label;
+  $label = '';
+  if (sizeof($cmodels) == 1){
+    $cmodel = islandora_object_load($cmodels[0]);
+    $label = $cmodel->label;
+  }
 
   // Header form
-  $form['cmodel'] = array(
-    '#markup' => $cmodel_label,
+  $form['label'] = array(
+    '#markup' => $label,
     '#prefix' => '<h1>',
     '#suffix' => '</h1>',
   );
@@ -67,7 +67,7 @@ function related_objects_form($form, &$form_state, $object, $cmodels=NULL, $rela
   // Add Link
   $form['ingest'] = array(
     '#type' => 'markup',
-    '#markup' =>  l("Ingest $cmodel_label", "islandora/object/{$object->id}/ingest/{$cmodel_label}"),
+    '#markup' =>  l("Ingest $label", "islandora/object/{$object->id}/ingest/{$cmodel_label}"),
     '#prefix' => '<div class="m-btn green">',
     '#suffix' => '</div>',
   );
