@@ -40,8 +40,7 @@ function related_objects_form($form, &$form_state, $object, $cmodels=NULL, $rela
    * adding objects to collections that can contain multiple types of content.
    */
 
-
-  echo islandora_cmodel_parent('islandora:project_cmodel');
+  echo islandora_cmodel_parent('islandora:child_cmodel');
 
   module_load_include('inc', 'islandora_bioinformatics', 'includes/sparql_helper_functions');
   $related_objects = islandora_object_related_islandora_objects($object, $cmodels, $relationships);

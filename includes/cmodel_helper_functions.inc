@@ -107,7 +107,8 @@ function islandora_cmodel_parent($cmodel_id) {
   $cmodel = islandora_cmodel_load($cmodel_id);
 
   if($cmodel){
-    $rel = $cmodel->relationships->get(null, 'hasParentModel');
+    $rel = $cmodel->relationships->get(ISLANDORA_RELS_EXT_URI, 'hasParentModel');
+    var_dump($rel);
     if($rel) {
       $parent = $rel[0]['object']['value'];
       return $parent;
@@ -176,7 +177,7 @@ function islandora_cmodel_create($cmodel_id,
   }
   // Inherit from parent
   if ($parent_id)
-    $cmodel->relationships->add(FEDORA_MODEL_URI, 'hasModel', $parent_id);
+    $cmodel->relationships->add(ISLANDORA_RELS_EXT_URI, 'hasParentModel', $parent_id);
 
   return $cmodel;
 
