@@ -38,11 +38,13 @@ function islandora_cmodel_load($cmodel_id) {
 
 // Relationships
 /**
- * Add a relationship to the given CModel.
+ * islandora_cmodel_add_relationship
+ *
+ * Adds a relationship to the given CModel.
  *
  * Takes a subject (either a AbstractObject or a FedoraDatastream), as well as
- * the parameters for FedoraRelsExt::add() or FedoraRelsInt::add(), and adds
- * the represented relationship.
+ * the parameters for FedoraRelsExt::add() and adds the represented relationship
+ * if it is towards a CModel, and does't already exist.
  *
  * @see FedoraRelsExt::add()
  */
@@ -50,11 +52,9 @@ function islandora_cmodel_add_relationship($sub, $pred_uri, $pred, $object, $typ
   module_load_include('inc', 'islandora', 'islandora.rules');
   $sub_is_cmodel    = islandora_cmodel_load($sub);
   $object_is_cmodel = islandora_cmodel_load($object);
-  $rel_exists = islandora_object_has_relationship($sub, $pred_uri, $pred, $object, $type);
+  $rel_exists       = islandora_object_has_relationship($sub, $pred_uri, $pred, $object, $type);
 
-  // If they're both CModels, and the relationship has not already been  defined.
   if ($sub_is_cmodel and $object_is_cmodel and !$rel_exists) {
-    // Define the relationship.
     islandora_object_add_relationship($sub, $pred_uri, $pred, $object, $type);
     return TRUE;
   }
@@ -63,20 +63,22 @@ function islandora_cmodel_add_relationship($sub, $pred_uri, $pred, $object, $typ
 }
 
 /**
+ * islandora_cmodel_remove_relationship
+ *
  * Removes a relationship to the given CModel.
  *
  * Takes a subject (either a AbstractObject or a FedoraDatastream), as well as
- * the parameters for FedoraRelsExt::remove() or FedoraRelsInt::remove(),
- * and removes the represented relationship.
+ * the parameters for FedoraRelsExt::remove(), and removes the represented
+ * relationship if it is towards a CModel, and it exists.
+ *
+ * @see FedoraRelsExt::remove()
  */
 function islandora_cmodel_remove_relationship($sub, $pred_uri, $pred, $object, $type) {
   $sub_is_cmodel    = islandora_cmodel_load($sub);
   $object_is_cmodel = islandora_cmodel_load($object);
   $rel_exists = islandora_object_has_relationship($sub, $pred_uri, $pred, $object, $type);
 
-  // If they're both CModels and the relationship is defined between them.
   if ($sub_is_cmodel and $object_is_cmodel and $rel_exists) {
-    // Remove the relationship.
     islandora_object_remove_relationship($sub, $pred_uri, $pred, $object, $type);
     return TRUE;
   }
@@ -84,22 +86,42 @@ function islandora_cmodel_remove_relationship($sub, $pred_uri, $pred, $object, $
   return FALSE;
 }
 
-
 /**
  * islandora_cmodel_relationships
  *
  * @param $cmodel_id
  *
  * @return array
- * The results of a SPARQL query.
+ *   This returns an indexed array with all CModel relationships towards this
+ *   object. The array is of the form:
+ *   @code
+ *   Array
+ *   (
+ *       [0] => Array
+ *           (
+ *               [predicate] => Array
+ *                   (
+ *                       [value] => thepredicate
+ *                       [alias] => thexmlprefix
+ *                       [namespace] => http://crazycool.com#
+ *                   )
  *
- * This function finds all objects related to the CModel or any of it's
- * supertypes. It excludes the _model_ and _subtype_ relationships.
+ *               [object] => Array
+ *                   (
+ *                       [literal] => TRUE
+ *                       [value] => test
+ *                   )
+ *
+ *           )
+ *
+ *   )
+ *   @endcode
  */
 function islandora_cmodel_relationships($cmodel_id) {
   $cmodel_ids = array($cmodel_id);
   $cmodel_ids = array_merge($cmodel_ids, islandora_cmodel_supertypes($cmodel_id));
 
+  // Construct the CModel Query
   $cm_query_array = array();
   foreach($cmodel_ids as $id){
     $cm_query_array[] = '{' . "?id ?relationship <info:fedora/$id>" . '}';
@@ -120,27 +142,49 @@ function islandora_cmodel_relationships($cmodel_id) {
       FILTER(!REGEX(STR(?relationship), 'Model'))
     }";
 
-  file_put_contents('/Users/nolan/Desktop/query.txt', $query);
-
+  // Connect to Tuque and perform the query.
   $tuque = new IslandoraTuque();
-  $results = $tuque->repository->ri->sparqlQuery($query);
+  $query_results= $tuque->repository->ri->sparqlQuery($query);
 
-  $relatives = array();
-  foreach($results as $result){
-    $relatives[$result['id']['value']][] = $result['relationship']['value'];
+
+  // Regex Patterns
+  $predicate_value_pattern  = '/^.*#(.*)$/';
+  $alias_pattern            = '/^(.*):.*$/';
+  $namespace_pattern        = '/^(.*#).*$/';
+
+  // Transform the SPARQL results into the FedoraRelationship::get() format.
+  $results = array();
+
+  foreach($query_results as $qr){
+    preg_match($predicate_value_pattern, $qr['relationship']['value'], $pred);
+    preg_match($alias_pattern,           $qr['relationship']['value'], $alias);
+    preg_match($namespace_pattern,       $qr['relationship']['uri'],   $namespace);
+    $results[] = array(
+      'predicate' => array(
+        'value' => $pred[1],
+        'alias' => $alias[1],
+        'namespace' => $namespace[1],
+      ),
+      'object' => array(
+        'literal' => false,
+        'value' => $qr['id']['value'],
+      ),
+    );
   }
 
-  echo "<pre>";
-  var_dump($relatives);
-  echo "</pre>";
+//  echo "<pre>";
+//  $cm = islandora_cmodel_load($cmodel_id);
+//  var_dump($cm->relationships->get());
+////  var_dump($query_results);
+//  var_dump($results);
+//  echo "</pre>";
 
-  return $relatives;
+  return $results;
 }
-
 
 // Polymorphism
 /**
- * Islandora CModel Parent
+ * islandora_cmodel_parent
  *
  * @param $cmodel_id
  *
@@ -162,7 +206,7 @@ function islandora_cmodel_parent($cmodel_id) {
 }
 
 /**
- * Islandora CModel Supertypes
+ * islandora_cmodel_supertypes
  * @param $cmodel_id
  *
  * @return array
@@ -184,16 +228,17 @@ function islandora_cmodel_supertypes($cmodel_id) {
 }
 
 /**
- * Creates and returns a Fedora CModel.
+ * islandora_cmodel_create
  *
- * @param      $cmodel_id
- * @param      $owner
- * @param      $label
- * @param null $parent_id
+ * @param        $cmodel_id
+ * @param        $label
+ * @param string $dscm_path
+ * @param null   $parent_id
+ * @param string $owner
  *
  * @return AbstractObject|null
  *
- * @todo Write docs for `islandora_cmodel_create`
+ * Creates a new CModel.
  */
 function islandora_cmodel_create($cmodel_id, $label, $dscm_path = '', $parent_id = NULL, $owner = 'fedoraAdmin') {
 
@@ -233,12 +278,9 @@ function islandora_cmodel_create($cmodel_id, $label, $dscm_path = '', $parent_id
     $supertypes = array($parent_id);
     array_merge($supertypes, islandora_cmodel_supertypes($parent_id));
 
-
     foreach($supertypes as $supertype){
       $cmodel->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSubtypeOf', $supertype);
     }
-
-
   }
 
   return $cmodel;
