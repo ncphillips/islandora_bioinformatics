@@ -36,22 +36,6 @@ function islandora_cmodel_load($cmodel_id) {
   return $cmodel;
 }
 
-/**
- * Loads an Islandora Object if it is a CModel and it is related to the
- * object passed in as the first parameter.
- */
-function islandora_related_cmodel_load($cmodel_id, $object) {
-  /**
-   * @todo islandora_related_cmodel_load
-   */
-  $cmodel = islandora_cmodel_load($cmodel_id);
-  $relatives = islandora_cmodel_relationships($cmodel_id);
-
-  $obj_models = $object->models;
-
-
-}
-
 // Relationships
 /**
  * Add a relationship to the given CModel.
@@ -60,7 +44,7 @@ function islandora_related_cmodel_load($cmodel_id, $object) {
  * the parameters for FedoraRelsExt::add() or FedoraRelsInt::add(), and adds
  * the represented relationship.
  *
- * @see FedoraRelsExt::get()
+ * @see FedoraRelsExt::add()
  */
 function islandora_cmodel_add_relationship($sub, $pred_uri, $pred, $object, $type) {
   module_load_include('inc', 'islandora', 'islandora.rules');
