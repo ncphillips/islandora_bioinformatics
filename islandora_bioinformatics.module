@@ -3,16 +3,12 @@ error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
 ini_set('display_startup_errors', TRUE);
 
-// Functions for working with CModels
+// CModels
 module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_helper_functions');
-
-// Islandora view object functions.
 module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_view_object');
-
-// Islandora CModel ingest steps
 module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_ingest_steps');
 
-// Page access callbacks
+// Access
 module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callbacks');
 
 // Drupal Forms
@@ -20,12 +16,25 @@ module_load_include('inc', 'islandora_bioinformatics', 'forms/related_objects.fo
 module_load_include('inc', 'islandora_bioinformatics', 'forms/related_people.form');
 module_load_include('inc', 'islandora_bioinformatics', 'forms/project_assign_person.form');
 
+// Page Callbacks
+module_load_include('inc', 'islandora_bioinformatics', 'includes/page_callbacks');
+
 // MENU
 /**
  * Implements hook_menu()
  */
+
 function islandora_bioinformatics_menu(){
   $urls = array();
+
+  $urls['islandora/object/%islandora_object/related/%islandora_related_cmodel'] = array(
+    'title' => 'Related Objects',
+    'type' => MENU_LOCAL_TASK,
+    'description' => 'A tab displaying related objects by CModel.',
+    'page callback' => 'islandora_object_related_objects_callback',
+    'page arguments' => array(2, 4),
+    'access callback' => TRUE,
+  );
 
   $urls['islandora/object/%islandora_object/people'] = array(
     'title' => 'People',
@@ -155,7 +164,7 @@ function islandora_bioinformatics_forms($form_id, $args) {
   switch($form_id){
 
     case 'related_people_form':
-      $cmodels = array('islandora:person_cmodel');
+      $cmodels = 'islandora:person_cmodel';
       $relationships = array(
         FEDORA_RELS_EXT_URI => array('isMemberOf'),
       );

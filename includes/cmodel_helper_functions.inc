@@ -40,10 +40,16 @@ function islandora_cmodel_load($cmodel_id) {
  * Loads an Islandora Object if it is a CModel and it is related to the
  * object passed in as the first parameter.
  */
-function islandora_related_cmodel_load($cmodel_id) {
+function islandora_related_cmodel_load($cmodel_id, $object) {
   /**
    * @todo islandora_related_cmodel_load
    */
+  $cmodel = islandora_cmodel_load($cmodel_id);
+  $relatives = islandora_cmodel_relationships($cmodel_id);
+
+  $obj_models = $object->models;
+
+
 }
 
 // Relationships
@@ -94,20 +100,57 @@ function islandora_cmodel_remove_relationship($sub, $pred_uri, $pred, $object, $
   return FALSE;
 }
 
+
 /**
+ * islandora_cmodel_relationships
+ *
+ * @param $cmodel_id
+ *
+ * @return array
+ * The results of a SPARQL query.
+ *
+ * This function finds all objects related to the CModel or any of it's
+ * supertypes. It excludes the _model_ and _subtype_ relationships.
  */
-function islandora_cmodel_relationships($cmodel_id, $target_id=NULL, $direction=NULL) {
+function islandora_cmodel_relationships($cmodel_id) {
   $cmodel_ids = array($cmodel_id);
-  array_merge($cmodel_ids, islandora_cmodel_supertypes($cmodel_id));
-  $rels = array();
+  $cmodel_ids = array_merge($cmodel_ids, islandora_cmodel_supertypes($cmodel_id));
 
+  $cm_query_array = array();
   foreach($cmodel_ids as $id){
-    $cm = islandora_cmodel_load($id);
-    $rel = $cm->relationships->get();
-    $rels = drupal_array_merge_deep(array($rels, $rel));
-
+    $cm_query_array[] = '{' . "?id ?relationship <info:fedora/$id>" . '}';
   }
-  return $rels;
+  $cm_query = implode(' UNION ', $cm_query_array);
+
+  $query = "
+    PREFIX fedora-model: <info:fedora/fedora-system:def/model#>
+    SELECT *
+    FROM <#ri>
+    WHERE
+    {
+      {?id fedora-model:hasModel <info:fedora/fedora-system:ContentModel-3.0>}
+      {
+        $cm_query
+      }
+      FILTER(!REGEX(STR(?relationship), 'Subtype'))
+      FILTER(!REGEX(STR(?relationship), 'Model'))
+    }";
+
+  file_put_contents('/Users/nolan/Desktop/query.txt', $query);
+
+  $tuque = new IslandoraTuque();
+  $results = $tuque->repository->ri->sparqlQuery($query);
+
+  $relatives = array();
+  foreach($results as $result){
+    $relatives[$result['id']['value']][] = $result['relationship']['value'];
+  }
+
+  echo "<pre>";
+  var_dump($relatives);
+  echo "</pre>";
+
+  return $relatives;
 }
 
 
@@ -152,9 +195,7 @@ function islandora_cmodel_supertypes($cmodel_id) {
     foreach($rels as $rel){
       $supertypes[] = $rel['object']['value'];
     }
-
   }
-
   return $supertypes;
 }
 

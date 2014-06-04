@@ -1,46 +1,57 @@
 <?php
 
-function islandora_object_related_islandora_objects($id, $cmodels=null,  $relationships=null, $subject=FALSE) {
+function islandora_object_related_islandora_objects($id=null, $cmodels=null,  $relationships=null, $subject=FALSE) {
 
   // The default query finds objects that are targeting $id. If subject is set
   // to true then it finds objects that $id is targeting.
+  if($id)
+    $id = "<info:fedora/$id>";
+  else
+    $id = "?id";
   $sub = "?relative";
-  $obj = "<info:fedora/$id>";
+  $obj = $id;
+
+
 
   if($subject){
-    $sub = "<info:fedora/$id>";
+    $sub = $id;
     $obj = "?relative";
   }
 
+  $cm_query = '';
+  $rel_query = '{' . "$sub ?relationship $obj" . '}';
+
   // CModels - The objects in question must be one of the listed CModels.
-  $cm_triples = array();
-  foreach($cmodels as $cmodel)
-    $cm_triples[] = "{ ?relative fedora-model:hasModel  <info:fedora/$cmodel>}";
+  if($cmodels){
+    $cm_triples = array();
+    foreach($cmodels as $cmodel)
+      $cm_triples[] = "{ ?relative fedora-model:hasModel  <info:fedora/$cmodel>}";
 
-  $cm_query = '{' . implode('UNION', $cm_triples) . '}';
-
-
-  // We define the fedora-model prefix by default.
-  $pre[FEDORA_MODEL_URI] = 'fedora-model:';
-  $prefix = 'a';
-  $prefix_def_array[] = 'PREFIX fedora-model: <info:fedora/fedora-system:def/model#>';
-  $rel_tripples = array();
-
-  // Prefices and Relationships
-  foreach ($relationships as $namespace => $rels) {
-    // Create a PREFIX for each namespace.
-    $pre[$namespace] = $prefix . ':';
-    $prefix_def_array[] = "PREFIX {$pre[$namespace]} <$namespace>";
-
-    // Create a triple for each relationship in the namespace.
-    foreach($rels as $rel){
-      $nsrel = $pre[$namespace] . $rel;
-      $rel_tripples[] = '{' . "$sub $nsrel $obj" . '}';
-    }
+    $cm_query = '{' . implode('UNION', $cm_triples) . '}';
   }
 
+  // Prefices and Relationships
+  $pre[FEDORA_MODEL_URI] = 'fedora-model:';
+  $prefix_def_array[] = 'PREFIX fedora-model: <info:fedora/fedora-system:def/model#>';
+  if($relationships) {
+    // We define the fedora-model prefix by default.
+    $prefix = 'a';
+    $rel_tripples = array();
+
+    foreach ($relationships as $namespace => $rels) {
+      // Create a PREFIX for each namespace.
+      $pre[$namespace] = $prefix . ':';
+      $prefix_def_array[] = "PREFIX {$pre[$namespace]} <$namespace>";
+
+      // Create a triple for each relationship in the namespace.
+      foreach($rels as $rel){
+        $nsrel = $pre[$namespace] . $rel;
+        $rel_tripples[] = '{' . "$sub $nsrel $obj" . '}';
+      }
+    }
+    $rel_query = implode('UNION', $rel_tripples);
+  }
   $prefix_definitions = implode(' ', $prefix_def_array);
-  $rel_query = implode('UNION', $rel_tripples);
 
   $query = "
     $prefix_definitions
@@ -57,10 +68,6 @@ function islandora_object_related_islandora_objects($id, $cmodels=null,  $relati
 
   $tuque = new IslandoraTuque();
   $result = $tuque->repository->ri->sparqlQuery($query);
-
-  echo "<pre>";
-  var_dump($result);
-  echo "</pre>";
 
   $related_objects = array();
   foreach ($result as $related_object) {
@@ -174,26 +181,28 @@ function islandora_object_related_islandora_objects($id, $cmodels=null,  $relati
 //  foreach ($result as $related_object) {
 //    $obj = islandora_object_load($related_object['pid']['value']);
 //    $related_objects[] = $obj ;
-//  }
-//  /**
-//   * ## Example Query
-//   * Here is an example of query that may be produced within this function.
-//   *
-//   *      PREFIX a: <info:fedora/fedora-system:def/relations-external#>
-//   *      PREFIX b: <info:fedora/fedora-system:def/model#>
-//   *  	 SELECT ?pid
-//   *  	 FROM <#ri>
-//   *  	 WHERE
-//   *      {
-//   *        {
-//   *          {?pid b:hasModel <info:fedora/islandora:person_cmodel>}
-//   *          UNION
-//   *          {?pid b:hasModel <info:fedora/islandora:specimen_cmodel>}
-//   *        }
-//   *        {
-//   *          {?pid a:isMemberOf <info:fedora/islandora:524>}
-//   *        }
-//   *      }
-//   */
-//
+//  }o
+
+
+  /**
+   * ## Example Query
+   * Here is an example of query that may be produced within this function.
+   *
+   *      PREFIX a: <info:fedora/fedora-system:def/relations-external#>
+   *      PREFIX b: <info:fedora/fedora-system:def/model#>
+   *  	 SELECT ?pid
+   *  	 FROM <#ri>
+   *  	 WHERE
+   *      {
+   *        {
+   *          {?pid b:hasModel <info:fedora/islandora:person_cmodel>}
+   *          UNION
+   *          {?pid b:hasModel <info:fedora/islandora:child_cmodel>}
+   *        }
+   *        {
+   *          {?pid a:isMemberOf <info:fedora/islandora:524>}
+   *        }
+   *      }
+   */
+
 //  return $related_objects;

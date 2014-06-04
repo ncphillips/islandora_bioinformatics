@@ -3,75 +3,61 @@
  * @file
  */
 
-
-function related_objects_form($form, &$form_state, $object, $cmodels=NULL, $relationships=NULL) {
-  /**
-   * ## related_islandora_objects_form
-   *
-   * @author Nolan Phillips ncphillips@upei.ca
-   * @param $form
-   * @param $form_state
-   * @param $object
-   * The Islandora Object whose relatives we are trying to find.
-   *
-   * @param $cmodels
-   * An array of CModel PIDs
-   *
-   *      array('islandora:lcms_cmodel', 'islandora:book_cmodel')
-   *
-   * @param $relationships
-   * An associative array in the form of:
-   *
-   *      array(
-   *        'namespace 1' => array('rel1', 'rel2', 'rel3'),
-   *        'namespace 2' => array('rel4'),
-   *      )
-   *
-   *
-   * Constructs a form which has a select table of islandora objects related to the
-   * $object. A related object is listed iff it's cmodel is in $cmodels and the
-   * relationship to $object is in $relationships.
-   *
-   * @todo This function isn't generic enough. It will list all CModels passed
-   * in through the $cmodels array; but, the title of the form and the links to
-   * add new objects will be based only off the first CModel provided. It might
-   * be best if this link would link to a callback function that deals with this
-   * in a way that is similar to how the Collection Solution Pack deals with
-   * adding objects to collections that can contain multiple types of content.
-   */
-
-
-
+/**
+ * related_islandora_objects_form
+ *
+ * @author Nolan Phillips ncphillips@upei.ca
+ *
+ * @param $form
+ * @param &$form_state
+ * @param $object
+ * The Islandora Object whose relatives we are displaying.
+ *
+ * @param $cmodel_id
+ * @param $relationships
+ * An associative array in the form of:
+ *
+ *      array(
+ *        'namespace 1' => array('rel1', 'rel2', 'rel3'),
+ *        'namespace 2' => array('rel4'),
+ *      )
+ *
+ *
+ * Constructs a form array with a select-table of islandora objects
+ * related to the $object. A related object is listed iff it's cmodel is in
+ * $cmodel_id and the relationship to $object is in $relationships.
+ */
+function related_objects_form($form, &$form_state, $object, $cmodel_id=NULL, $relationships=NULL) {
   module_load_include('inc', 'islandora_bioinformatics', 'includes/sparql_helper_functions');
-  $related_objects = islandora_object_related_islandora_objects($object,
-    array($cmodeli), $relationships);
+  $related_objects = islandora_object_related_islandora_objects($object, array($cmodel_id), $relationships);
+
+  islandora_cmodel_relationships('islandora:child_cmodel');
 
   $form_state['object'] = $object;
   $form_state['related_objects'] = $related_objects;
-  if (isset($cmodels)) $form_state['cmodels'] = $cmodels;
+  if (isset($cmodel_id)) $form_state['cmodel_id'] = $cmodel_id;
   if (isset($relationships)) $form_state['relationships'] = $relationships;
 
-  $label = '';
-  if (sizeof($cmodels) == 1){
-    $cmodel = islandora_object_load($cmodels[0]);
-    $label = $cmodel->label;
-  }
+  $cmodel = islandora_object_load($cmodel_id);
+  $cmodel_label = $cmodel->label;
 
   // Header form
-  $form['label'] = array(
-    '#markup' => $label,
+  $form['header'] = array(
+    '#markup' => $cmodel_label,
     '#prefix' => '<h1>',
     '#suffix' => '</h1>',
   );
 
   // Add Link
+  /** @todo Check if the ingest function exists before adding the option. */
   $form['ingest'] = array(
     '#type' => 'markup',
-    '#markup' =>  l("Ingest $label", "islandora/object/{$object->id}/ingest/{$cmodel_label}"),
+    '#markup' =>  l("Ingest $cmodel_label", "islandora/object/{$object->id}/ingest/{$cmodel_label}"),
     '#prefix' => '<div class="m-btn green">',
     '#suffix' => '</div>',
   );
 
+  /** @todo Check if the add function exists before adding the option. */
   $form['add'] = array(
 //    '#type' => 'type',
 //    '#markup' =>  l("Add Existing $cmodel_label", "islandora/object/{$object->id}/add_lab_object_to_project"),
@@ -150,6 +136,10 @@ function related_islandora_objects_submit(array $form, array &$form_state) {
   switch ($selected_option) {
     //in case of relationship removal from the object
     case "remove":
+      /**
+       * @todo This should remove any relationship defined in the
+       * $form_state['relationships'] array...not just isPartOf
+       */
       //for each table row
       foreach ($table_values as $lines => $line) {
         //if $line exists (if it is a selected table row)
