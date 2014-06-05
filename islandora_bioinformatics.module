@@ -23,17 +23,16 @@ module_load_include('inc', 'islandora_bioinformatics', 'includes/page_callbacks'
 /**
  * Implements hook_menu()
  */
-
 function islandora_bioinformatics_menu(){
   $urls = array();
 
-  $urls['islandora/object/%islandora_object/related/%islandora_related_cmodel'] = array(
-    'title' => 'Related Objects',
+  $urls['islandora/object/%islandora_object/lab_objects'] = array(
+    'title' => 'Lab Objects',
     'type' => MENU_LOCAL_TASK,
-    'description' => 'A tab displaying related objects by CModel.',
-    'page callback' => 'islandora_object_related_objects_callback',
-    'page arguments' => array(2, 4),
-    'access callback' => TRUE,
+    'page callback' => 'related_lab_objects_page_callback',
+    'page arguments' => array(2),
+    //'access callback' => 'islandora_related_lab_objects_access',
+    //'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
   );
 
   $urls['islandora/object/%islandora_object/people'] = array(
@@ -42,11 +41,9 @@ function islandora_bioinformatics_menu(){
     'description' => 'People assigned to this project.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('related_people_form', 2),
-//    'access callback' => TRUE,
     'access callback' => 'islandora_related_people_access',
     'access arguments' => array(array(FEDORA_VIEW_OBJECTS), 2),
   );
-
 
   $urls['islandora/object/%islandora_object/people/add'] = array(
     'title' => 'Assign People',
@@ -190,8 +187,6 @@ function islandora_bioinformatics_forms($form_id, $args) {
 function islandora_bioinformatics_islandora_xml_form_builder_forms() {
   $module_path = drupal_get_path('module', 'islandora_bioinformatics');
 
-  $fb_forms = array();
-
   // Person Forms
   $fb_forms['Person MADS Form'] = array(
     'form_file' => "$module_path/xml/forms/person_mads_form.xml",
@@ -217,8 +212,6 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
 function islandora_bioinformatics_islandora_xml_form_builder_form_associations() {
   $module_path = drupal_get_path('module', 'islandora_bioinformatics');
 
-  $form_associations = array();
-
   $form_associations['islandora_bioinformatics_person_mads'] = array(
     'content_model' => 'islandora:person_cmodel',
     'form_name' => 'Person MADS Form',
@@ -238,4 +231,18 @@ function islandora_bioinformatics_islandora_xml_form_builder_form_associations()
   );
 
   return $form_associations;
+}
+
+// Islandora Object Alter
+/**
+ * Implements hook_islandora_object_alter
+ *
+ * This function creates a fedora:hasModel relationship between the $object
+ * and all of it's CModel's supertypes.
+ */
+function islandora_bioinformatics_islandora_object_alter(AbstractObject $object, array &$context) {
+  // Parent CModel
+  $cmodel_id = $object->models[0];
+  $models = array_merge($object->models, islandora_cmodel_supertypes($cmodel_id));
+  $object->models = $models;
 }
