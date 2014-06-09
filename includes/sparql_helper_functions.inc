@@ -24,6 +24,7 @@ function islandora_object_related_islandora_objects($id=null, $cmodels=null,  $r
   // CModels - The objects in question must be one of the listed CModels.
   if($cmodels){
     $cm_triples = array();
+    var_dump($cmodels);
     foreach($cmodels as $cmodel)
       $cm_triples[] = "{ ?relative fedora-model:hasModel  <info:fedora/$cmodel>}";
 
