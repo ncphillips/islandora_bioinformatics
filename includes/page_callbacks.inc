@@ -38,11 +38,12 @@ function related_lab_objects_page_callback($object) {
   $query = "
     PREFIX fedora-model: <info:fedora/fedora-system:def/model#>
     PREFIX fedora: <info:fedora/fedora-system:def/relations-external#>
+    PREFIX islandora: <" . ISLANDORA_RELS_EXT_URI . ">
     SELECT ?pid
     FROM <#ri>
     WHERE {
-      ?pid fedora-model:hasModel <info:fedora/islandora:lab_object_cmodel> .
-      ?pid fedora:datarel_isPartOf<info:fedora/$target_pid>
+      ?pid islandora:isSubtypeOf <info:fedora/islandora:lab_object_cmodel> .
+      ?pid ?rel <info:fedora/$target_pid>
     }";
 
   $results = $tuque->repository->ri->sparqlQuery($query); //Now get the results for this query.

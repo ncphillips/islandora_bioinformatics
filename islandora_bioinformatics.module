@@ -31,8 +31,9 @@ function islandora_bioinformatics_menu(){
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'related_lab_objects_page_callback',
     'page arguments' => array(2),
-    //'access callback' => 'islandora_related_lab_objects_access',
-    //'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
+//    'access callback' => TRUE,
+    'access callback' => 'islandora_related_lab_objects_access',
+    'access arguments' => array(array(FEDORA_VIEW_OBJECTS), 2),
   );
 
   $urls['islandora/object/%islandora_object/people'] = array(
