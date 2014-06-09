@@ -102,3 +102,19 @@ function islandora_related_lab_object_ingest_action($object, $cmodel) {
   else
     return drupal_not_found();
 }
+
+
+function islandora_cmodel_name($cmodel) {
+  /**
+   * @param $cmodel
+   * @return string
+   */
+  $pattern = '/islandora:(.*)_cmodel/';
+
+  $content_model_pid = $cmodel->id;
+  preg_match($pattern, $content_model_pid, $match);
+  if (sizeof($match) >= 1)
+    return $match[1];
+  else
+    return '';
+}
