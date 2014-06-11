@@ -102,20 +102,6 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
 }
 
 function islandora_related_objects_submit(array $form, array &$form_state) {
-
-  /**
-   * This function is the submit handler for the related_islandora_objects_form function
-   * It performs $selected_object actions on the $table_values which have been selected
-   * from the related objects table.
-   *
-   * @author Natasha Squires <nsquires@upei.ca>
-   *
-   * @param array $form
-   * The form
-   * @param array &$form_state
-   * the form state
-   *
-   * */
   //which action was selected form the drop down menu
   $selected_option = $form_state['values']['selected'];
   //the object in question

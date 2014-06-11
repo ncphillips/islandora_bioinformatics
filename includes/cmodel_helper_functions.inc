@@ -6,6 +6,30 @@
  * Provides a number of helper functions for when working with CModel objects.
  */
 
+
+function islandora_object_parent_model($object_id){
+  $query = "
+    PREFIX islandora: " . ISLANDORA_RELS_EXT_URI . "
+    SELECT ?id
+    FROM <#ri>
+    WHERE {
+      <info:/fedora/$object_id> islandora:hasParentModel ?id
+    }
+  ";
+
+  echo "he";
+  $tuque = new IslandoraTuque();
+  $results = $tuque->repository->ri->sparqlQuery($query);
+  echo '<pre>';
+  var_dump($results);
+  echo '</pre>';
+
+  $parents = array();
+  foreach($results as $result){
+    $parents[] = $result['id']['value'];
+  }
+}
+
 /**
  * Loads an Islandora Object if it is a CModel.
  *

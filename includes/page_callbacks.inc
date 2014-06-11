@@ -12,6 +12,9 @@ function islandora_related_objects_page($object, $cmodel_id=null){
   // Replace : with _ in CModel ID.
   $cmid = str_replace(':', '_', $object->models[0]);
 
+  $parent = islandora_object_parent_model($object->id);
+  var_dump($parent);
+
   $page_types = array(
     'islandora_related_objects_page',         // Alter any related objects page.
     "islandora_{$cmid}_related_objects_page");// Alter the related objects page for $cmid.
@@ -40,7 +43,6 @@ function islandora_related_objects_page($object, $cmodel_id=null){
 
   return $page;
 }
-
 
 function islandora_related_objects_ingest_callback($parent, $cmodel){
   echo $cmodel->id;
@@ -78,6 +80,7 @@ function islandora_related_objects_ingest_callback($parent, $cmodel){
     if (empty($results)) {
       $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection->id);
     }
+
 
     $relationships = array(
       FEDORA_RELS_EXT_URI => array('isPartOf')
