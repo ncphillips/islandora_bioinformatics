@@ -13,7 +13,6 @@ module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callback
 
 // Drupal Forms
 module_load_include('inc', 'islandora_bioinformatics', 'forms/related_objects.form');
-module_load_include('inc', 'islandora_bioinformatics', 'forms/related_people.form');
 module_load_include('inc', 'islandora_bioinformatics', 'forms/project_assign_person.form');
 
 // Page Callbacks
@@ -26,37 +25,52 @@ module_load_include('inc', 'islandora_bioinformatics', 'includes/page_callbacks'
 function islandora_bioinformatics_menu(){
   $urls = array();
 
-  $urls['islandora/object/%islandora_object/lab_objects'] = array(
-    'title' => 'Lab Objects',
-    'type' => MENU_LOCAL_TASK,
-    'page callback' => 'related_lab_objects_page_callback',
+  // Default Functionality
+  $urls['islandora/object/%islandora_object/related_content'] = array(
+    'title' => 'Related Content',
+    'page callback' => 'islandora_related_objects_page',
     'page arguments' => array(2),
-//    'access callback' => TRUE,
-    'access callback' => 'islandora_related_lab_objects_access',
-    'access arguments' => array(array(FEDORA_VIEW_OBJECTS), 2),
+    'access callback' => 'islandora_object_access',
+    'access arguments' => array(FEDORA_VIEW_OBJECTS, 2),
+    'type' => MENU_LOCAL_TASK,
   );
 
+  $urls['islandora/object/%islandora_object/related_content/add/%islandora_cmodel'] = array(
+    'title callback' => 'islandora_cmodel_function_title',
+    'title arguments' => array('Add', 5),
+    'page callback' => 'islandora_related_objects_add_callback',
+    'page arguments' => array(2, 5),
+    'access callback' => 'islandora_object_access',
+    'access arguments' => array(FEDORA_METADATA_EDIT, 2),
+    'type' => MENU_CALLBACK,
+  );
+
+  $urls['islandora/object/%islandora_object/related_content/ingest/%islandora_cmodel'] = array(
+    'title callback' => 'islandora_cmodel_function_title',
+    'title arguments' => array('Ingest', 5),
+    'page callback' => 'islandora_related_objects_ingest_callback',
+    'page arguments' => array(2, 5),
+    'access callback' => 'islandora_object_access',
+    'access arguments' => array(FEDORA_INGEST, 2),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Custom Tab
   $urls['islandora/object/%islandora_object/people'] = array(
     'title' => 'People',
     'type' => MENU_LOCAL_TASK,
     'description' => 'People assigned to this project.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('related_people_form', 2),
+    'page arguments' => array('islandora_related_objects_form', 2, 'islandora:person_cmodel'),
     'access callback' => 'islandora_related_people_access',
     'access arguments' => array(array(FEDORA_VIEW_OBJECTS), 2),
   );
 
-  $urls['islandora/object/%islandora_object/people/add'] = array(
-    'title' => 'Assign People',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('project_assign_person_form', 2),
-    'type' => MENU_CALLBACK,
-    //'access callback' => TRUE,
-    'access callback' => 'islandora_related_people_access',
-    'access arguments' => array(array(FEDORA_INGEST), 2),
-  );
-
   return $urls;
+}
+
+function islandora_cmodel_function_title($action, $cmodel){
+  return "{$action} {$cmodel->label}";
 }
 
 // THEME
@@ -151,35 +165,6 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
   );
 }
 
-// DRUPAL FORMS
-/**
- * Implements hook_forms()
- */
-function islandora_bioinformatics_forms($form_id, $args) {
-
-  $forms = array();
-
-  switch($form_id){
-
-    case 'related_people_form':
-      $cmodels = 'islandora:person_cmodel';
-      $relationships = array(
-        FEDORA_RELS_EXT_URI => array('isMemberOf'),
-      );
-
-      $args[] = $cmodels;
-      $args[] = $relationships;
-
-      $forms['related_people_form'] = array(
-        'callback' => 'related_objects_form',
-        'callback arguments' => $args,
-      );
-
-      break;
-  }
-
-  return $forms;
-}
 
 // FORM BUILDER FORMS
 /**
@@ -193,14 +178,14 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
     'form_file' => "$module_path/xml/forms/person_mads_form.xml",
   );
 
-  /** @todo Person EML form. */
-  /** @todo Person MADS to EML XSLT. */
-
   // Project Forms
   $fb_forms['Project MADS Form'] = array(
     'form_file' => "$module_path/xml/forms/project_mads_form.xml",
   );
 
+
+  /** @todo Person EML form. */
+  /** @todo Person MADS to EML XSLT. */
   /** @todo Project EML form. */
   /** @todo Project MADS to EML XSLT. */
 
@@ -234,7 +219,7 @@ function islandora_bioinformatics_islandora_xml_form_builder_form_associations()
   return $form_associations;
 }
 
-// Islandora Object Alter
+//
 /**
  * Implements hook_islandora_object_alter
  *
@@ -246,4 +231,78 @@ function islandora_bioinformatics_islandora_object_alter(AbstractObject $object,
   $cmodel_id = $object->models[0];
   $models = array_merge($object->models, islandora_cmodel_supertypes($cmodel_id));
   $object->models = $models;
+
+  // Creates a hasParentModel relationship towards the CModel initially chosen.
+  $object->relationships->add(ISLANDORA_RELS_EXT_URI, 'hasParentModel', $cmodel_id);
 }
+
+
+//////// PAGE AND FORM ALTERS ///////////
+/**
+ * Implements hook_islandora_related_objects_page_alter()
+ *
+ * Example.
+ */
+function islandora_bioinformatics_islandora_related_objects_page_alter(&$page, &$page_state){
+
+  $page[] = array('#type' => 'markup', '#markup'=>t('Alter all related objects pages.</br>'));
+  $count = 0;
+  foreach($page_state['relationships'] as $rel){
+    if($rel['object']['value'] == 'islandora:person_cmodel') {
+      unset($page_state['relationships'][$count]);
+    }
+    $count++;
+  }
+//  unset($page_state['relationships'][0]);
+}
+
+/**
+ * Implements hook_islandora_CMODEL_ID_related_objects_page_alter()
+ *
+ * Example.
+ */
+function islandora_bioinformatics_islandora_islandora_project_cmodel_related_objects_page_alter(&$page, &$page_state)
+{
+  $page[] = array(
+    '#type' => 'markup',
+    '#markup' => t('I have altered this page because the object in question is a Project.</br>'));
+
+
+}
+
+/** Implements hook_form_islandora_related_objects_form_alter() */
+function islandora_bioinformatics_form_islandora_related_objects_form_alter(&$form, &$formstate){
+  $form['next section'] = array(
+    '#markup' => t("Alter all related objects forms.</br>"));
+
+  $subject = islandora_object_load($formstate['islandora']['object']);
+  $subject_id = str_replace(':', '_', $subject->models[0]);
+  $object_id = str_replace(':', '_', $formstate['islandora']['cmodel']);
+
+  $other_ids = array(
+    "form_islandora_{$subject_id}_related_objects_form",
+    "form_islandora_related_{$object_id}_objects_form",
+    "form_islandora_{$subject_id}_related_{$object_id}_objects_form"
+  );
+
+  drupal_alter($other_ids, $form, $formstate);
+
+}
+
+/** Implements hook_form_islandora_OBJECT_MODEL_related_objects_form_alter() */
+function islandora_bioinformatics_form_islandora_islandora_project_cmodel_related_objects_form_alter(&$form, &$form_state) {
+  $form[] = array('#markup' => 'Alter form for content related to a Project.</br>');
+}
+
+/** Implements hook_form_islandora_related_RELATED_MODEL_objects_form_alter() */
+function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmodel_objects_form_alter(&$form, &$form_state) {
+  $form[] = array('#markup' => 'Alter form for Specimen content related to any object.</br>');
+}
+/** Implements hook_form_islandora_OBJECT_MODEL_related_RELATED_MODEL_objects_form_alter() */
+
+function islandora_bioinformatics_form_islandora_islandora_project_cmodel_related_islandora_specimen_cmodel_objects_form_alter(&$form, &$form_state) {
+  $form[] = array('#markup' => 'Alter form for Specimen content related to Projects.</br>');
+}
+
+
+

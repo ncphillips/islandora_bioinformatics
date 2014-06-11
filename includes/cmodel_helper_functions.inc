@@ -6,12 +6,6 @@
  * Provides a number of helper functions for when working with CModel objects.
  */
 
-
-define('CMODEL_SUFFIX', '_cmodel');
-define('REL_TO', 'to');
-define('REL_FROM', 'from');
-define('REL', 'any');
-
 /**
  * Loads an Islandora Object if it is a CModel.
  *
@@ -121,13 +115,14 @@ function islandora_cmodel_relationships($cmodel_id) {
   $cmodel_ids = array($cmodel_id);
   $cmodel_ids = array_merge($cmodel_ids, islandora_cmodel_supertypes($cmodel_id));
 
-  // Construct the CModel Query
+  // Construct the CModel tripples
   $cm_query_array = array();
   foreach($cmodel_ids as $id){
     $cm_query_array[] = '{' . "?id ?relationship <info:fedora/$id>" . '}';
   }
   $cm_query = implode(' UNION ', $cm_query_array);
 
+  // Construct Query
   $query = "
     PREFIX fedora-model: <info:fedora/fedora-system:def/model#>
     SELECT *
@@ -146,7 +141,6 @@ function islandora_cmodel_relationships($cmodel_id) {
   $tuque = new IslandoraTuque();
   $query_results= $tuque->repository->ri->sparqlQuery($query);
 
-
   // Regex Patterns
   $predicate_value_pattern  = '/^.*#(.*)$/';
   $alias_pattern            = '/^(.*):.*$/';
@@ -154,7 +148,6 @@ function islandora_cmodel_relationships($cmodel_id) {
 
   // Transform the SPARQL results into the FedoraRelationship::get() format.
   $results = array();
-
   foreach($query_results as $qr){
     preg_match($predicate_value_pattern, $qr['relationship']['value'], $pred);
     preg_match($alias_pattern,           $qr['relationship']['value'], $alias);
@@ -171,13 +164,6 @@ function islandora_cmodel_relationships($cmodel_id) {
       ),
     );
   }
-
-//  echo "<pre>";
-//  $cm = islandora_cmodel_load($cmodel_id);
-//  var_dump($cm->relationships->get());
-////  var_dump($query_results);
-//  var_dump($results);
-//  echo "</pre>";
 
   return $results;
 }
@@ -272,11 +258,12 @@ function islandora_cmodel_create($cmodel_id, $label, $dscm_path = '', $parent_id
 
   // Inherit from parent
   if ($parent_id) {
+    // Set the Parent
     $cmodel->relationships->add(ISLANDORA_RELS_EXT_URI, 'hasParentModel', $parent_id);
 
-    // Supertypes
-    $supertypes = array($parent_id);
-    array_merge($supertypes, islandora_cmodel_supertypes($parent_id));
+    // Set the supertypes.
+    $supertypes = islandora_cmodel_supertypes($parent_id);
+    $supertypes[] = $parent_id;
 
     foreach($supertypes as $supertype){
       $cmodel->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSubtypeOf', $supertype);

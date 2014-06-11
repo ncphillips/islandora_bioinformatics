@@ -3,67 +3,56 @@
  * @file
  */
 
-/**
- * related_islandora_objects_form
- *
- * @author Nolan Phillips ncphillips@upei.ca
- *
- * @param $form
- * @param &$form_state
- * @param $object
- * The Islandora Object whose relatives we are displaying.
- *
- * @param $cmodel_id
- * @param $relationships
- * An associative array in the form of:
- *
- *      array(
- *        'namespace 1' => array('rel1', 'rel2', 'rel3'),
- *        'namespace 2' => array('rel4'),
- *      )
- *
- *
- * Constructs a form array with a select-table of islandora objects
- * related to the $object. A related object is listed iff it's cmodel is in
- * $cmodel_id and the relationship to $object is in $relationships.
- */
-function related_objects_form($form, &$form_state, $object, $cmodel_id=NULL, $relationships=NULL) {
+function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_id, $relationships=null){
   module_load_include('inc', 'islandora_bioinformatics', 'includes/sparql_helper_functions');
-  $related_objects = islandora_object_related_islandora_objects($object, array($cmodel_id), $relationships);
 
-  islandora_cmodel_relationships('islandora:child_cmodel');
+  if(empty($related_objects))
+    $related_objects = islandora_object_related_islandora_objects($object_id, array($cmodel_id), $relationships);
 
-  $form_state['object'] = $object;
-  $form_state['related_objects'] = $related_objects;
-  if (isset($cmodel_id)) $form_state['cmodel_id'] = $cmodel_id;
-  if (isset($relationships)) $form_state['relationships'] = $relationships;
+  $formstate['islandora']['object'] = $object_id;
+  $formstate['islandora']['cmodel'] = $cmodel_id;
+  $formstate['islandora']['relationships'] = $relationships;
+  $formstate['islandora']['related_objects'] = $related_objects;
 
-  $cmodel = islandora_object_load($cmodel_id);
+  // Fedora Objects
+  $object = islandora_object_load($object_id);
+  $cmodel = islandora_cmodel_load($cmodel_id);
+
+  // Label
   $cmodel_label = $cmodel->label;
 
-  // Header form
+  // Permissions
+  $can_ingest = islandora_object_access(FEDORA_INGEST,            $object);
+  $can_add    = islandora_object_access(FEDORA_METADATA_EDIT,     $object)
+            and islandora_object_access(FEDORA_MANAGE_PROPERTIES, $object);
+
+
+  // Header
   $form['header'] = array(
-    '#markup' => $cmodel_label,
+    '#markup' => $cmodel->label,
     '#prefix' => '<h1>',
     '#suffix' => '</h1>',
   );
 
-  // Add Link
-  /** @todo Check if the ingest function exists before adding the option. */
-  $form['ingest'] = array(
-    '#type' => 'markup',
-    '#markup' =>  l("Ingest $cmodel_label", "islandora/object/{$object->id}/ingest/{$cmodel_label}"),
-    '#prefix' => '<div class="m-btn green">',
-    '#suffix' => '</div>',
-  );
+  if($can_ingest) {
+    $form['ingest'] = array(
+      '#type' => 'markup',
+      '#markup' =>  l("Ingest {$cmodel_label}",
+                      "islandora/object/{$object->id}/related_content/ingest/{$cmodel_id}"),
+      '#prefix' => '<div>',
+      '#suffix' => '</div>',
+    );
+  }
 
-  /** @todo Check if the add function exists before adding the option. */
-  $form['add'] = array(
-//    '#type' => 'type',
-//    '#markup' =>  l("Add Existing $cmodel_label", "islandora/object/{$object->id}/add_lab_object_to_project"),
-//'#prefix' => '<div class="m-btn green">',
-//'#suffix' => '</div>',
-  );
+  if($can_add){
+    $form['add link'] = array(
+      '#type' => 'markup',
+      '#markup' =>  l("Add Existing {$cmodel_label}",
+                      "islandora/object/{$object->id}/related_content/add/{$cmodel_id}"),
+      '#prefix' => '<div>',
+      '#suffix' => '</div>',
+    );
+  }
 
   // From our form there should be a list of specific operations that can be performed
   // on the objects in the list.
@@ -73,14 +62,14 @@ function related_objects_form($form, &$form_state, $object, $cmodel_id=NULL, $re
     '#options' => array(
       'remove' => t('Remove'),
     ),
-    '#description' => t('Actions'),
+//    '#description' => t('Actions'),
   );
 
   // Submit button for form actions.
   $form['submit'] =  array(
     '#type' => 'submit',
     '#value' => 'Submit',
-    '#submit' => array('related_islandora_objects_submit'),
+    '#submit' => array('islandora_related_objects_submit'),
   );
 
   $header = array(
@@ -108,10 +97,11 @@ function related_objects_form($form, &$form_state, $object, $cmodel_id=NULL, $re
     '#value' => $object,
   );
 
+
   return $form;
 }
 
-function related_islandora_objects_submit(array $form, array &$form_state) {
+function islandora_related_objects_submit(array $form, array &$form_state) {
 
   /**
    * This function is the submit handler for the related_islandora_objects_form function
