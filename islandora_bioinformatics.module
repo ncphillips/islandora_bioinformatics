@@ -121,6 +121,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
   $lab_object = islandora_cmodel_create('islandora:lab_object_cmodel',  'Lab Object', "$module_path/xml/cmodels/lab_object_dscm.xml");
   $project    = islandora_cmodel_create('islandora:project_cmodel',     'Project',    "$module_path/xml/cmodels/project_dscm.xml");
   $person     = islandora_cmodel_create('islandora:person_cmodel',      'Person',     "$module_path/xml/cmodels/person_dscm.xml");
+  $sponge     = islandora_cmodel_create('islandora:sponge_cmodel',      'Sponge',   "$module_path/xml/cmodels/lab_object_dscm.xml", 'islandora:specimen_cmodel');
 
   // CModel: person isMemberOf project
   islandora_cmodel_add_relationship($person, FEDORA_RELS_EXT_URI, 'isMemberOf', $project->id, FALSE);
@@ -128,6 +129,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
   $objects[] = $lab_object;
   $objects[] = $project;
   $objects[] = $person;
+  $objects[] = $sponge;
 
   // Collections
   $collections = array(

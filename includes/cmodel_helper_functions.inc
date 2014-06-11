@@ -1,4 +1,5 @@
 <?php
+module_load_include('inc', 'islandora_bioinformatics', 'includes/sparql_helper_functions');
 
 /**
  * @file cmodel_functions.php
@@ -9,25 +10,23 @@
 
 function islandora_object_parent_model($object_id){
   $query = "
-    PREFIX islandora: " . ISLANDORA_RELS_EXT_URI . "
+    PREFIX islandora: <" . ISLANDORA_RELS_EXT_URI . ">
     SELECT ?id
     FROM <#ri>
     WHERE {
-      <info:/fedora/$object_id> islandora:hasParentModel ?id
+      <info:fedora/$object_id> islandora:hasParentModel ?id
     }
   ";
 
-  echo "he";
   $tuque = new IslandoraTuque();
   $results = $tuque->repository->ri->sparqlQuery($query);
-  echo '<pre>';
-  var_dump($results);
-  echo '</pre>';
 
   $parents = array();
   foreach($results as $result){
     $parents[] = $result['id']['value'];
   }
+
+  return $parents;
 }
 
 /**
@@ -235,6 +234,24 @@ function islandora_cmodel_supertypes($cmodel_id) {
     }
   }
   return $supertypes;
+}
+
+function islandora_cmodel_subtypes($cmodel_id){
+  $cmodel = islandora_cmodel_load($cmodel_id);
+  if($cmodel){
+    $query_results = islandora_object_related_islandora_objects(
+      $cmodel_id,
+      array(),
+      array(ISLANDORA_RELS_EXT_URI => array('isSubtypeOf'))
+    );
+
+    $subtypes = array();
+    foreach($query_results as $subtype){
+      $subtypes[] = $subtype->id;
+    }
+    return $subtypes;
+  }
+  else return null;
 }
 
 /**

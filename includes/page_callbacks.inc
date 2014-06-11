@@ -5,15 +5,12 @@
  *
  * @param $object
  */
-function islandora_related_objects_page($object, $cmodel_id=null){
+function islandora_related_objects_page($object, $related_cmodel_id=null){
   $page_state['object'] = $object;
   $page_state['relationships'] = islandora_cmodel_relationships($object->models[0]);
 
   // Replace : with _ in CModel ID.
-  $cmid = str_replace(':', '_', $object->models[0]);
-
-  $parent = islandora_object_parent_model($object->id);
-  var_dump($parent);
+  $cmid = str_replace(':', '_', islandora_object_parent_model($object->id)[0]);
 
   $page_types = array(
     'islandora_related_objects_page',         // Alter any related objects page.
@@ -21,50 +18,59 @@ function islandora_related_objects_page($object, $cmodel_id=null){
 
   drupal_alter($page_types, $page, $page_state);
 
-  // With the page(state) altered, we generate the forms.
+  $related_content_form_args = array();
   foreach($page_state['relationships'] as $relationship){
-    // The $relationship array is in the wrong format.
-    $cm = $relationship['object']['value'];
+    $c = $relationship['object']['value'];
 
-    if($cmodel_id == null or $cmodel_id == $relationship['object']['value']) {
-      $rels = array(
-        $relationship['predicate']['namespace'] => array(
-          $relationship['predicate']['value'],
-        ),
-      );
+    if($related_cmodel_id == null or $related_cmodel_id == $c){
+      $ns = $relationship['predicate']['namespace'];
+      $pred = $relationship['predicate']['value'];
 
-      $page['content forms'][]  = drupal_get_form(
-        'islandora_related_objects_form',  // Form
-        $object->id,                       // Object
-        $relationship['object']['value'],  // CModel
-        $rels);                            // Relationships
+      $related_content_form_args[$c][$ns][] = $pred;
     }
+  }
+
+  foreach($related_content_form_args as $c => $rels){
+    $page['content forms'][] = drupal_get_form(
+      'islandora_related_objects_form',
+      $object->id,
+      $c,
+      $rels
+    );
   }
 
   return $page;
 }
 
-function islandora_related_objects_ingest_callback($parent, $cmodel){
-  echo $cmodel->id;
+function islandora_related_objects_ingest_callback(FedoraObject $parent, $cmodel){
+  islandora_cmodel_create('islandora:sponge_cmodel', 'Sponge', '', 'islandora:specimen_cmodel');
 
-  // Rplace : with _ in CModel ID.
+
+  // Replace : with _ in CModel ID.
   $cmid = str_replace(':', '_', $cmodel->id);
 
-  // Change the parent collection.
-  $data = array(
-    'collection' => 'islandora:specimen_collection',
-  );
 
+  // Implement these hooks if you want to set the collection object.
   $hooks = array(
     "islandora_related_objects_ingest",
     "islandora_related_{$cmid}_objects_ingest",
   );
-
   drupal_alter($hooks, $data);
-
   $collection = islandora_object_load($data['collection']);
 
-  if($collection !== FALSE) {
+  // Config data for Ingestion.
+  $config_data = array(
+    /*
+     * id
+     * namespace
+     * label
+     * collections
+     * models
+     * parent
+     */
+  );
+
+  if($collection){
     // Make sure $collection is a collection, and has a COLLECTION_POLICY.
     $is_collection_object = in_array('islandora:collectionCModel', $collection->models);
     $has_policy = isset($collection['COLLECTION_POLICY']);
@@ -72,40 +78,39 @@ function islandora_related_objects_ingest_callback($parent, $cmodel){
     if (!$is_collection_object || !$has_policy) {
       return drupal_not_found();
     }
-
     $object = $collection->repository->constructObject();
-    $object->label = 'New Object';
+    $config_data['collection'] = $collection;
+    $config_data['parent'] = $collection->id;
+  }
+  else {
+    $object = $parent->repository->constructObject();
+//    $config_data['parent'] = $parent;
+  }
 
-    $results = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection->id);
-    if (empty($results)) {
-      $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection->id);
-    }
+  $object->label = 'New Object';
 
+  $models = array_merge(islandora_cmodel_subtypes($cmodel->id), array($cmodel->id, 'islandora:person_cmodel'));
+  var_dump($models);
+  $config_data['models'] = $models;
+  $config_data['object'] = $object;
 
-    $relationships = array(
-      FEDORA_RELS_EXT_URI => array('isPartOf')
-    );
+  // This part should be a separate form...
+  $relationships = array(
+    FEDORA_RELS_EXT_URI => array('isPartOf')
+  );
 
-    foreach($relationships as $ns => $rels){
-      foreach($rels as $rel){
-        $results = $object->relationships->get($ns, $rel, $parent);
-        if (empty($results)) {
-          $object->relationships->add($ns, $rel, $parent);
-        }
+  foreach($relationships as $ns => $rels){
+    foreach($rels as $rel){
+      $results = $object->relationships->get($ns, $rel, $parent);
+      if (empty($results)) {
+        $object->relationships->add($ns, $rel, $parent);
       }
     }
-
-    $config_data = array(
-      'collection' => $collection,
-      'models' => array($cmodel->id),
-      'objects' => array($object),
-      'parent' => $collection->id, );
-
-
-    module_load_include('inc', 'islandora', 'includes/ingest.form');
-    return drupal_get_form('islandora_ingest_form', $config_data);
   }
-  drupal_not_found();
+
+
+  module_load_include('inc', 'islandora', 'includes/ingest.form');
+  return drupal_get_form('islandora_ingest_form', $config_data);
 }
 
 function islandora_related_objects_add_callback($object, $cmodel) {
