@@ -3,49 +3,62 @@
 /**
  * islandora_related_objects_page
  *
- * @param $object
+ * RELATED CONTENT
  */
-function islandora_related_objects_page($object, $related_cmodel_id=null){
-  $page_state['object'] = $object;
-  $page_state['relationships'] = islandora_cmodel_relationships($object->models[0]);
+function islandora_related_objects_page($object, $related_cmid_restriction=null){
+  $page = array();
 
   // Replace : with _ in CModel ID.
-  $cmid = str_replace(':', '_', islandora_object_parent_model($object->id)[0]);
+  $object_parent_model = islandora_object_parent_model($object->id)[0];
+  $objects_models = islandora_object_models($object->id);
 
-  $page_types = array(
-    'islandora_related_objects_page',         // Alter any related objects page.
-    "islandora_{$cmid}_related_objects_page");// Alter the related objects page for $cmid.
 
-  drupal_alter($page_types, $page, $page_state);
+  // Page State
+  $page_state['object'] = $object;
+  $page_state['relationships'] = islandora_cmodel_relationships_towards($object_parent_model);
 
+
+  // Hooks to call.
+  $hooks = array('islandora_related_objects_page');
+
+  // Related Content Page Alters are inherited.
+  // It would be nice to make sure order is preserved.
+  foreach($objects_models as $m){
+    $o = str_replace(':', "_", $m);
+    $hooks[] = "islandora_{$o}_related_objects_page";// Alter the related objects page for $cmid.
+
+  }
+
+
+  drupal_alter($hooks, $page, $page_state);
+
+  // One Related Content Form per CModel.
   $related_content_form_args = array();
   foreach($page_state['relationships'] as $relationship){
-    $c = $relationship['object']['value'];
+    $related_cmodel_id = $relationship['object']['value'];
 
-    if($related_cmodel_id == null or $related_cmodel_id == $c){
+    if($related_cmid_restriction == null or $related_cmid_restriction == $related_cmodel_id){
       $ns = $relationship['predicate']['namespace'];
       $pred = $relationship['predicate']['value'];
 
-      $related_content_form_args[$c][$ns][] = $pred;
+      $related_content_form_args[$related_cmodel_id][$ns][] = $pred;
     }
   }
 
-  foreach($related_content_form_args as $c => $rels){
+  // Create the Related Content Forms
+  foreach($related_content_form_args as $related_cmodel_id => $rels){
     $page['content forms'][] = drupal_get_form(
-      'islandora_related_objects_form',
-      $object->id,
-      $c,
-      $rels
+      'islandora_related_objects_form', // Form ID
+      $object->id,                      // Object ID
+      $related_cmodel_id,               // Related CModel ID
+      $rels                             // Array of valid relationships
     );
   }
 
   return $page;
 }
 
-function islandora_related_objects_ingest_callback(FedoraObject $parent, $cmodel){
-  islandora_cmodel_create('islandora:sponge_cmodel', 'Sponge', '', 'islandora:specimen_cmodel');
-
-
+function islandora_related_objects_ingest_callback($object, $cmodel){
   // Replace : with _ in CModel ID.
   $cmid = str_replace(':', '_', $cmodel->id);
 
@@ -55,8 +68,9 @@ function islandora_related_objects_ingest_callback(FedoraObject $parent, $cmodel
     "islandora_related_objects_ingest",
     "islandora_related_{$cmid}_objects_ingest",
   );
+
   drupal_alter($hooks, $data);
-  $collection = islandora_object_load($data['collection']);
+
 
   // Config data for Ingestion.
   $config_data = array(
@@ -70,6 +84,8 @@ function islandora_related_objects_ingest_callback(FedoraObject $parent, $cmodel
      */
   );
 
+  $collection = islandora_object_load($data['collection']);
+
   if($collection){
     // Make sure $collection is a collection, and has a COLLECTION_POLICY.
     $is_collection_object = in_array('islandora:collectionCModel', $collection->models);
@@ -78,36 +94,26 @@ function islandora_related_objects_ingest_callback(FedoraObject $parent, $cmodel
     if (!$is_collection_object || !$has_policy) {
       return drupal_not_found();
     }
-    $object = $collection->repository->constructObject();
+    $new_object = $collection->repository->constructObject();
     $config_data['collection'] = $collection;
     $config_data['parent'] = $collection->id;
   }
   else {
-    $object = $parent->repository->constructObject();
-//    $config_data['parent'] = $parent;
+    $new_object = $object->repository->constructObject();
+    $config_data['parent'] = $object;
   }
 
-  $object->label = 'New Object';
+  $new_object->label = 'New Object';
 
-  $models = array_merge(islandora_cmodel_subtypes($cmodel->id), array($cmodel->id, 'islandora:person_cmodel'));
-  var_dump($models);
-  $config_data['models'] = $models;
-  $config_data['object'] = $object;
-
-  // This part should be a separate form...
-  $relationships = array(
-    FEDORA_RELS_EXT_URI => array('isPartOf')
+  $models = array_merge(                    // Models to choose from are
+    array($cmodel->id),                     // the CModel passed in and
+    islandora_cmodel_subtypes($cmodel->id)  // all of it's Subtypes.
   );
 
-  foreach($relationships as $ns => $rels){
-    foreach($rels as $rel){
-      $results = $object->relationships->get($ns, $rel, $parent);
-      if (empty($results)) {
-        $object->relationships->add($ns, $rel, $parent);
-      }
-    }
-  }
+  $config_data['models'] = $models;
+  $config_data['object'] = $new_object;
 
+  $new_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'temp', $object);
 
   module_load_include('inc', 'islandora', 'includes/ingest.form');
   return drupal_get_form('islandora_ingest_form', $config_data);
