@@ -77,3 +77,14 @@ function islandora_object_related_islandora_objects($id=null, $cmodels=null,  $r
 
   return $related_objects;
 }
+
+function ros(){
+
+  $query_processor = new IslandoraSolrQueryProcessor();
+
+  $query = 'field:query';
+
+
+  // This function accepts an IslandoraSolrQueryProcessor as a variable.
+  islandora_xacml_api_islandora_solr_query($query);
+}

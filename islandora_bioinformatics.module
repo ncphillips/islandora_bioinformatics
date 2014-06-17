@@ -23,13 +23,13 @@ module_load_include('inc', 'islandora_bioinformatics', 'includes/page_callbacks'
 /**
  * Implements hook_menu()
  *
- * RELATED CONTENT
- * 1. islandora/object/%islandora_object/related_content
- * 2. islandora/object/%islandora_object/related_content/add/%islandora_cmodel
- * 3. islandora/object/%islandora_object/related_content/ingest/%islandora_cmodel
+ * # RELATED CONTENT
+ * ## islandora/object/%islandora_object/related_content
+ * ## islandora/object/%islandora_object/related_content/add/%islandora_cmodel
+ * ## islandora/object/%islandora_object/related_content/ingest/%islandora_cmodel
  *
- * MNPL
- * 1. islandora/object/%islandora_object/people
+ * # MNPL
+ * ## islandora/object/%islandora_object/people
  */
 function islandora_bioinformatics_menu(){
   $urls = array();
@@ -45,7 +45,7 @@ function islandora_bioinformatics_menu(){
   );
 
   $urls['islandora/object/%islandora_object/related_content/add/%islandora_cmodel'] = array(
-    'title callback' => 'islandora_cmodel_function_title',
+    'title callback' => 'islandora_cmodel_action_title',
     'title arguments' => array('Add', 5),
     'page callback' => 'islandora_related_objects_add_callback',
     'page arguments' => array(2, 5),
@@ -55,7 +55,7 @@ function islandora_bioinformatics_menu(){
   );
 
   $urls['islandora/object/%islandora_object/related_content/ingest/%islandora_cmodel'] = array(
-    'title callback' => 'islandora_cmodel_function_title',
+    'title callback' => 'islandora_cmodel_action_title',
     'title arguments' => array('Ingest', 5),
     'page callback' => 'islandora_related_objects_ingest_callback',
     'page arguments' => array(2, 5),
@@ -78,7 +78,7 @@ function islandora_bioinformatics_menu(){
   return $urls;
 }
 
-function islandora_cmodel_function_title($action, $cmodel){
+function islandora_cmodel_action_title($action, $cmodel){
   return "{$action} {$cmodel->label}";
 }
 
@@ -428,3 +428,4 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
 
   return $form;
 }
+

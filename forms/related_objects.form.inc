@@ -4,7 +4,7 @@
  */
 
 function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_id, $relationships=null){
-  module_load_include('inc', 'islandora_bioinformatics', 'includes/sparql_helper_functions');
+  module_load_include('inc', 'islandora_bioinformatics', 'includes/query_helper_functions');
 
   if(empty($related_objects))
     $related_objects = islandora_object_related_islandora_objects($object_id, array($cmodel_id), $relationships);
