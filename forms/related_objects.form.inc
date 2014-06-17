@@ -74,6 +74,8 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
 
   $header = array(
     'id' => 'ID',
+    'label' => 'Label',
+    'cmodel' => 'Type',
   );
 
   $options = array();
@@ -81,6 +83,8 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
   foreach ($related_objects as $related_object) {
     $options[$related_object->id] = array(
       'id' => $related_object->id,
+      'label' => $related_object->label,
+      'cmodel' => islandora_object_parent_model($related_object->id)[0],
     );
   }
 

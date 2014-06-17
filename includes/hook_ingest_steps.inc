@@ -6,6 +6,10 @@
  *       This file provides this modules implementations of hook_islandora_ingest_steps()
  */
 
+/**
+ * Implements hook_islandora_ingest_steps()
+ * @return array
+ */
 function islandora_bioinformatics_islandora_ingest_steps(){
   $ingest_steps = array();
 
@@ -25,29 +29,44 @@ function islandora_bioinformatics_islandora_ingest_steps(){
   return $ingest_steps;
 }
 
+/**
+ * set_parent_relationships
+ *
+ * @param $args
+ */
 function set_parent_relationships($args){
-
+  // New Object
   $object = $args['build_info']['args'][0]['object'];
-//  echo '<pre>';
-//  var_dump($args);
-//  var_dump(array_keys($args));
-//  echo '</pre>';
-  // The object which will be designated the parent.
+
+  // New object has parents
   $has_parent = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'temp');
 
   if($has_parent){
     // Remove the temp relationship
     $object->relationships->remove(ISLANDORA_RELS_EXT_URI, 'temp');
 
-    // Get teh ID of the Parent object
+    // Get the ID of the Parent object
     $parent_id = $has_parent[0]['object']['value'];
 
     // Get all of the Parent object's CModels.
     $parent_cmodels = islandora_object_models($parent_id);
 
+//    echo '<pre>';
+//    var_dump(array_keys($args['islandora']['step_storage']['xml_form_builder_association_step']));
+//    var_dump($args['islandora']['step_storage']['xml_form_builder_association_step']['association']['content_model']);
+//    echo '</pre>';
+
     // Get the New Object's CModel.
-    $cmodel_id = $args['input']['models'];
-    echo $cmodel_id;
+    $cmodel_id = $args['build_info']['args'][0]['models'];
+
+    if(sizeof($cmodel_id) > 1) {
+      echo "Multiple cms";
+      $cmodel_id = $args['islandora']['step_storage']['xml_form_builder_association_step']['association']['content_model'];
+
+    }
+    else{
+      $cmodel_id = $cmodel_id[0];
+    }
 
     // Get the NO CModel's CMRELS
     $cmodel_rels = islandora_cmodel_relationships_away($cmodel_id);
@@ -65,8 +84,12 @@ function set_parent_relationships($args){
   }
 }
 
-function unset_parent_relationship($object){
-
+/**
+ * unset_parent_relationships
+ * @param $args
+ */
+function unset_parent_relationships($args){
+  /** @todo */
 }
 
 
@@ -115,3 +138,11 @@ function islandora_bioinformatics_islandora_project_cmodel_islandora_ingest_step
 
   return $ingest_steps;
 }
+
+
+
+
+
+
+
+

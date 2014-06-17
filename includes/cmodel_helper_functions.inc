@@ -1,5 +1,6 @@
 <?php
 module_load_include('inc', 'islandora_bioinformatics', 'includes/sparql_helper_functions');
+
 define("ISLANDORA_MODEL_URI", 'http://islandora.ca/ontology/model#');
 
 /**
@@ -282,7 +283,7 @@ function islandora_cmodel_parent($cmodel_id) {
   $parents = array(); // This should be an array of length 1.
 
   if($cmodel){
-    $rels = $cmodel->relationships->get(ISLANDORA_RELS_EXT_URI,  'hasParentModel');
+    $rels = $cmodel->relationships->get(ISLANDORA_MODEL_URI,  'hasParentModel');
 
     foreach($rels as $rel)
       $parents[] = $rel['object']['value'];
@@ -302,7 +303,7 @@ function islandora_cmodel_supertypes($cmodel_id) {
   $supertypes = array();
 
   if ($cmodel) {
-    $rels = $cmodel->relationships->get(ISLANDORA_RELS_EXT_URI, 'isSubtypeOf');
+    $rels = $cmodel->relationships->get(ISLANDORA_MODEL_URI, 'isSubtypeOf');
 
     $supertypes = array();
     foreach($rels as $rel){
@@ -318,7 +319,7 @@ function islandora_cmodel_subtypes($cmodel_id){
     $query_results = islandora_object_related_islandora_objects(
       $cmodel_id,
       array(),
-      array(ISLANDORA_RELS_EXT_URI => array('isSubtypeOf'))
+      array(ISLANDORA_MODEL_URI => array('isSubtypeOf'))
     );
 
     $subtypes = array();

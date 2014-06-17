@@ -120,6 +120,14 @@ function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
     ),
   );
 
+  $themes['cmodel'] = array(
+    'file' => 'theme/theme.inc',
+    'template' => 'theme/cmodel',
+    'variables' => array(
+      'object' => NULL,
+    ),
+  );
+
   return $themes;
 }
 

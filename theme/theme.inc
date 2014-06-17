@@ -1,9 +1,15 @@
 <?php
 
+function islandora_bioinformatics_preprocess_cmodel(array &$variables){
+}
+
 /**
  * Implements hook_preprocess_islandora_person()
  */
-function islandora_bioinformatics_base_preprocess_islandora_person(array &$variables) {
+function islandora_bioinformatics_preprocess_islandora_person(array &$variables) {
+
+  module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
+
   $islandora_object = $variables['islandora_object'];
 
   // Thumbnail.
@@ -25,8 +31,9 @@ function islandora_bioinformatics_base_preprocess_islandora_person(array &$varia
 /**
  * Implements hook_preprocess_islandora_project()
  */
-function islandora_bioinformatics_base_preprocess_islandora_project(array &$variables) {
+function islandora_bioinformatics_preprocess_islandora_project(array &$variables) {
 
+  module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
   $islandora_object = $variables['islandora_object'];
   // Thumbnail.
