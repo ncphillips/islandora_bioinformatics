@@ -44,7 +44,7 @@ function islandora_related_objects_page_access(FedoraObject $object){
     return false;
   }
   else {
-    return islandora_object_access(FEDORA_VIEW_OBJECTS, $object);
+    return islandora_object_access(ISLANDORA_VIEW_OBJECTS, $object);
   }
 
 }

@@ -65,7 +65,7 @@ function islandora_bioinformatics_menu(){
     'page callback' => 'islandora_related_objects_add_callback',
     'page arguments' => array(2, 5),
     'access callback' => 'islandora_object_access',
-    'access arguments' => array(FEDORA_METADATA_EDIT, 2),
+    'access arguments' => array(ISLANDORA_METADATA_EDIT, 2),
     'type' => MENU_CALLBACK,
   );
 
@@ -75,7 +75,7 @@ function islandora_bioinformatics_menu(){
     'page callback' => 'islandora_related_objects_ingest_callback',
     'page arguments' => array(2, 5),
     'access callback' => 'islandora_object_access',
-    'access arguments' => array(FEDORA_INGEST, 2),
+    'access arguments' => array(ISLANDORA_INGEST, 2),
     'type' => MENU_CALLBACK,
   );
 
@@ -87,7 +87,7 @@ function islandora_bioinformatics_menu(){
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_related_objects_form', 2, 'islandora:person_cmodel'),
     'access callback' => 'islandora_related_people_access',
-    'access arguments' => array(array(FEDORA_VIEW_OBJECTS), 2),
+    'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
   );
 
   return $urls;

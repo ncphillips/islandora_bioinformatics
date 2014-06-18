@@ -22,9 +22,9 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
   $cmodel_label = $cmodel->label;
 
   // Permissions
-  $can_ingest = islandora_object_access(FEDORA_INGEST,            $object);
-  $can_add    = islandora_object_access(FEDORA_METADATA_EDIT,     $object)
-            and islandora_object_access(FEDORA_MANAGE_PROPERTIES, $object);
+  $can_ingest = islandora_object_access(ISLANDORA_INGEST,            $object);
+  $can_add    = islandora_object_access(ISLANDORA_METADATA_EDIT,     $object)
+            and islandora_object_access(ISLANDORA_MANAGE_PROPERTIES, $object);
 
 
   // Header
