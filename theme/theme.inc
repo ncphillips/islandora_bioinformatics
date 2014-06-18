@@ -1,10 +1,17 @@
 <?php
 
+/**
+ * Implements hook_preprocess_THEME()
+ *
+ * Where THEME = cmodel
+ */
 function islandora_bioinformatics_preprocess_cmodel(array &$variables){
 }
 
 /**
- * Implements hook_preprocess_islandora_person()
+ * Implements hook_preprocess_THEME()
+ *
+ * Where THEME = islandora_person
  */
 function islandora_bioinformatics_preprocess_islandora_person(array &$variables) {
 
@@ -29,7 +36,9 @@ function islandora_bioinformatics_preprocess_islandora_person(array &$variables)
 
 
 /**
- * Implements hook_preprocess_islandora_project()
+ * Implements hook_preprocess_THEME()
+ *
+ * Where THEME = islandora_project
  */
 function islandora_bioinformatics_preprocess_islandora_project(array &$variables) {
 
