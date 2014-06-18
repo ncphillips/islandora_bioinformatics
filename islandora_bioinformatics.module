@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file islandora_bioinformatics.module
+ */
 error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
 ini_set('display_startup_errors', TRUE);
@@ -24,12 +27,24 @@ module_load_include('inc', 'islandora_bioinformatics', 'includes/page_callbacks'
  * Implements hook_menu()
  *
  * # RELATED CONTENT
+ * These are default URLs for displaying and managing related content.
+ *
  * ## islandora/object/%islandora_object/related_content
+ * A tab which displays content related to the %islandora_object.
+ *
  * ## islandora/object/%islandora_object/related_content/add/%islandora_cmodel
+ * Provides a UI to allow users to create a relationship between an existing object
+ * of type %islandora_cmodel and the %islandora_object.
+ *
  * ## islandora/object/%islandora_object/related_content/ingest/%islandora_cmodel
+ * Begins the ingestion process for an object of type %islandora_cmodel, which
+ * will have a relationship towards the %islandora_object.
  *
  * # MNPL
+ * These are custom URLs for the MNPL website.
+ *
  * ## islandora/object/%islandora_object/people
+ * A tab which displays a list of people related to an object.
  */
 function islandora_bioinformatics_menu(){
   $urls = array();
@@ -78,6 +93,21 @@ function islandora_bioinformatics_menu(){
   return $urls;
 }
 
+/**
+ * islandora_cmodel_action_title
+ *
+ * @param $action
+ * @param $cmodel
+ *
+ * @return string
+ *
+ * Generates a page title given an 'action' and a 'cmodel'.
+ *
+ * For example:
+ *
+ *    Add Specimen
+ *    Ingest Project
+ */
 function islandora_cmodel_action_title($action, $cmodel){
   return "{$action} {$cmodel->label}";
 }
@@ -85,13 +115,13 @@ function islandora_cmodel_action_title($action, $cmodel){
 /**
  * Implements hook_theme()
  *
- * MNPL
- *
- * Themes
+ * # MNPL
  *  1. islandora_lab_object
  *  2. islandora_project
  *  3. islandora_person
  *
+ * # RELATED CONTENT
+ *  1. cmodel
  */
 function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
   $themes = array();
@@ -204,7 +234,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
 /**
  * Implements hook_islandora_xml_form_builder_forms()
  *
- * MADS Forms
+ * # MNPL - MADS Forms
  *
  *    1. Person MADS Form
  *    2. Project MADS Form
@@ -279,8 +309,11 @@ function islandora_bioinformatics_islandora_xml_form_builder_form_associations()
 function islandora_bioinformatics_islandora_object_alter($object, array &$context) {
   $object_is_cmodel = $object->relationships->get(FEDORA_MODEL_URI, 'hasModel', 'fedora-system:ContentModel-3.0');
   if(!$object_is_cmodel){
+
     // Parent CModel
-    $cmodel_id = $object->models[0];
+    $cmodel_id = islandora_object_parent_model($object->id);
+
+    // Merges the object's models with
     $models = array_merge($object->models, islandora_cmodel_supertypes($cmodel_id));
     $object->models = $models;
 
@@ -290,35 +323,27 @@ function islandora_bioinformatics_islandora_object_alter($object, array &$contex
 }
 
 
-
-
-//////// PAGE AND FORM ALTERS ///////////
 /**
- * Implements hook_islandora_related_objects_page_alter()
+ * Implements hook_islandora_OBJECT_CMODEL_related_objects_page_alter()
  *
- * MNPL
+ * Where OBJECT_CMODEL = islandora:project_cmodel
+ *
+ * # MNPL
  *
  * Altering the Related Content page for Project's to exclude relationships
  * towards the Person CModel.
  */
 function islandora_bioinformatics_islandora_islandora_project_cmodel_related_objects_page_alter(&$page, &$page_state){
   $count = 0;
+
+  // Find and iterate through all relationships.
   foreach($page_state['relationships'] as $rel){
+    // Remove relationships if the object is a person.
     if($rel['object']['value'] == 'islandora:person_cmodel') {
       unset($page_state['relationships'][$count]);
     }
     $count++;
   }
-
-//  module_load_include('inc', 'islandora_xml_forms', 'builder/includes/associations');
-//  var_dump(
-//    xml_form_builder_get_associations(
-//      array(),
-//      array('islandora:person_cmodel'),
-//      array(),
-//      TRUE
-//    )
-//  );
 }
 
 /**
@@ -339,28 +364,38 @@ function islandora_bioinformatics_islandora_islandora_project_cmodel_related_obj
 function islandora_bioinformatics_form_islandora_related_objects_form_alter(&$form, &$formstate){
   $hooks = array();
 
+  // Object
   $object = islandora_object_load($formstate['islandora']['object']);
+
+  // Related CModel
   $related_cmodel_id = $formstate['islandora']['cmodel'];
 
+  // {Related CModel} UNION {Related CModel Supertypes}
   $related_cmodel_types = array_merge(array($related_cmodel_id),
                                       islandora_cmodel_supertypes($related_cmodel_id));
+
 
   $rcm_count = 0;
   foreach($related_cmodel_types as $rcm){
     // Replace : with _ for hook name generation.
     $rcm_str_replaced  = str_replace(':', '_', $rcm);
 
-    // Replace it in the array.
+    // Replace it in the array of Related CModel Types
     $related_cmodel_types[$rcm_count] = $rcm_str_replaced;
 
+    // Hook function string.
     $hooks[] = "form_islandora_related_{$rcm_str_replaced}_objects_form";
     $rcm_count++;
   }
 
-
+  // Remove the FedoraObject-3.0 from the list of the Object's CModels.
   $object_models = array_diff($object->models, array('fedora-system:FedoraObject-3.0'));
+
+  // Iterate through the Object's CModels.
   foreach($object_models as $ocm){
+    // Replate : with _ for hook name generation.
     $object_cmodel = str_replace(':', '_', $ocm);
+
     $hooks[] = "form_islandora_{$object_cmodel}_related_objects_form";
 
     foreach($related_cmodel_types as $rcm){
@@ -368,27 +403,17 @@ function islandora_bioinformatics_form_islandora_related_objects_form_alter(&$fo
     }
   }
 
-//  echo '<pre>';
-//  var_dump($hooks);
-//  echo '</pre>';
-
+  // Alter forms.
   drupal_alter($hooks, $form, $formstate);
-
 }
 
-/** Implements hook_form_islandora_related_RELATED_CMODEL_objects_form_alter */
+/**
+ * Implements hook_form_FORM_ID_alter()
+ *
+ * WHERE  FORM_ID         = "islandora_related_RELATED_CMODEL_objects_form"
+ * AND    RELATED_CMODEL  = "islandora:person_cmodel"
+ */
 function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel_objects_form_alter(&$form, &$form_state) {
-  /**
-   * @author Nolan Phillips ncphillips@upei.ca
-   *
-   * @param $form
-   * @param $form_state
-   * @return form array $form
-   *
-   * Implements hook_related_people_form_alter()
-   *
-   * Alters the related_objects_form for displaying related People.
-   */
   module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
   $object = $form_state['islandora']['object'];
