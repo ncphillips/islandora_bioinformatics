@@ -126,25 +126,25 @@ function islandora_cmodel_action_title($action, $cmodel){
 function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
   $themes = array();
 
-  $themes['islandora_lab_object'] = array(
+  $themes['islandora-bioinformatics-lab-object'] = array(
     'file' => 'theme/theme.inc',
-    'template' => 'theme/islandora_lab_object',
+    'template' => 'theme/islandora-bioinformatics-lab-object',
     'variables' => array(
       'object' => NULL,
     ),
   );
 
-  $themes['islandora_project']    = array(
+  $themes['islandora-bioinformatics-project']    = array(
     'file' => 'theme/theme.inc',
-    'template' => 'theme/islandora_project',
+    'template' => 'theme/islandora-bioinformatics_project',
     'variables' => array(
       'object' => NULL,
     ),
   );
 
-  $themes['islandora_person']     = array(
+  $themes['islandora-bioinformatics-person']     = array(
     'file' => 'theme/theme.inc',
-    'template' => 'theme/islandora_person',
+    'template' => 'theme/islandora-bioinformatics-person',
     'variables' => array(
       'object' => NULL,
     ),

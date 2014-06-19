@@ -40,7 +40,7 @@ function islandora_object_related_islandora_objects($id=null, $cmodels=null,  $r
 
     foreach ($relationships as $namespace => $rels) {
       // Create a PREFIX for each namespace.
-      $pre[$namespace] = $prefix . ':';
+      $pre[$namespace] = $prefix++ . ':';
       $prefix_def_array[] = "PREFIX {$pre[$namespace]} <$namespace>";
 
       // Create a triple for each relationship in the namespace.
