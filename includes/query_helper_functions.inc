@@ -84,9 +84,23 @@ function islandora_object_related_islandora_objects($id=null, $cmodels=null,  $r
 /**
  *
  */
-function ros($cmodel, $relationships=null){
-  $cmodel = str_replace(':', '\:', $cmodel);
+function ros($object, $cmodels=null, $relationships=null){
+  $object = str_replace(':', '\:', $object);
 
+  // CModel
+  if (empty($cmodels)){
+    $cmodels[] = '*';
+  }
+
+  $cmodel_subquery = array();
+  foreach($cmodels as $cmodel){
+    $cmodel = str_replace(':', '\:', $cmodel);
+    $cmodel_subquery[] = "RELS_EXT_hasModel_uri_mt:$cmodel";
+  }
+
+  $cmodel_query = '(' . implode(' OR ', $cmodel_subquery) . ')';
+
+  // Relationship
   if(empty($relationships)){
     $FEDORA_RELS_EXT_RELATIONSHIPS =  array(
       'fedoraRelationship',
@@ -102,18 +116,19 @@ function ros($cmodel, $relationships=null){
       'isAnnotationOf',       'hasAnnotation',
       'hasEquivalent'
     );
-
     $relationships = $FEDORA_RELS_EXT_RELATIONSHIPS;
   }
 
   $rel_subqueries = array();
   foreach($relationships as $rel){
-    $rel_subqueries[] = "RELS_EXT_{$rel}_uri_mt:{$cmodel}";
+    $rel_subqueries[] = "RELS_EXT_{$rel}_uri_mt:{$object}";
   }
 
-  $query = implode(' OR ',$rel_subqueries);
+  $rel_query = '(' . implode(' OR ',$rel_subqueries) . ')';
 
-  echo $query;
+  // Whole Query
+  $query = $cmodel_query . ' AND ' . $rel_query;
+
 
   $query_processor = new IslandoraSolrQueryProcessor();
 

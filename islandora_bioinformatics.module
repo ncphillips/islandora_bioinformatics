@@ -101,9 +101,10 @@ function islandora_bioinformatics_menu(){
 }
 
 function test_page_callback(){
-  $cmodel = 'islandora:specimen_cmodel';
+  $object = 'islandora:93';
+  $cmodels = array('islandora:sponge_cmodel');
   $relationships = array('isPartOf');
-  ros($cmodel);
+  ros($object, $cmodels, $relationships);
   return '';
 }
 
