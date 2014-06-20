@@ -139,8 +139,18 @@ function islandora_object_related_islandora_objects($object=null, $cmodels=null,
 
   $query_processor->buildAndExecuteQuery($query);
 
+  $solr_results = $query_processor->islandoraSolrResult;
+
   echo '<pre>';
-  var_dump($query_processor->islandoraSolrResult);
+
+  $results = array();
+  foreach($solr_results['response']['objects'] as $object){
+    var_dump($object['PID']);
+    $results[] = islandora_object_load($object['PID']);
+  }
+
+
   echo '</pre>';
+  return $results;
 }
 

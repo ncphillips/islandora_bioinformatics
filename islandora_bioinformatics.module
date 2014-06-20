@@ -151,7 +151,7 @@ function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
 
   $themes['islandora-bioinformatics-project']    = array(
     'file' => 'theme/theme.inc',
-    'template' => 'theme/islandora-bioinformatics_project',
+    'template' => 'theme/islandora-bioinformatics-project',
     'variables' => array(
       'object' => NULL,
     ),

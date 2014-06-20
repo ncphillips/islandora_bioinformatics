@@ -9,14 +9,13 @@ function islandora_related_objects_page($object, $related_cmid_restriction=null)
   $page = array();
 
   // Replace : with _ in CModel ID.
-  $object_parent_model = islandora_object_parent_model($object->id)[0];
+  $object_parent_model = islandora_object_parent_model($object->id);
   $objects_models = islandora_object_models($object->id);
 
 
   // Page State
   $page_state['object'] = $object;
   $page_state['relationships'] = islandora_cmodel_relationships_towards($object_parent_model);
-
 
   // Hooks to call.
   $hooks = array('islandora_related_objects_page');
@@ -29,7 +28,6 @@ function islandora_related_objects_page($object, $related_cmid_restriction=null)
 
   }
 
-
   drupal_alter($hooks, $page, $page_state);
 
   // One Related Content Form per CModel.
@@ -38,10 +36,9 @@ function islandora_related_objects_page($object, $related_cmid_restriction=null)
     $related_cmodel_id = $relationship['object']['value'];
 
     if($related_cmid_restriction == null or $related_cmid_restriction == $related_cmodel_id){
-      $ns = $relationship['predicate']['namespace'];
       $pred = $relationship['predicate']['value'];
 
-      $related_content_form_args[$related_cmodel_id][$ns][] = $pred;
+      $related_content_form_args[$related_cmodel_id][] = $pred;
     }
   }
 

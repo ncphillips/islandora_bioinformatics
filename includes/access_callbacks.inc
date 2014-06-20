@@ -22,7 +22,7 @@ function islandora_related_people_access($permissions, AbstractObject $object) {
 function islandora_object_has_people($object) {
   // Use this function instead of $object->models[0] to make sure we get
   // the actual parent CModel.
-  $cmodel_id = islandora_object_parent_model($object->id)[0];
+  $cmodel_id = islandora_object_parent_model($object->id);
 
   // NOTE: This function will check all of $object's CModel's supertypes as well.
   $relationships = islandora_cmodel_relationships_towards($cmodel_id);

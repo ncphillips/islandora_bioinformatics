@@ -75,7 +75,7 @@ foreach($subtypes as $st_id){
 $objects = islandora_object_related_islandora_objects(
   $object->id, //object
   array($object->id), //CModel
-  array(FEDORA_MODEL_URI => array('hasModel')) //Relationships
+  array('hasModel') //Relationships
 );
 foreach($objects as $o){
   $m = islandora_object_parent_model($o->id)[0];

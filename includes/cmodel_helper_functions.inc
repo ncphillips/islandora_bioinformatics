@@ -318,7 +318,7 @@ function islandora_cmodel_subtypes($cmodel_id){
     $query_results = islandora_object_related_islandora_objects(
       $cmodel_id,
       array(),
-      array(ISLANDORA_MODEL_URI => array('isSubtypeOf'))
+      array('isSubtypeOf')
     );
 
     $subtypes = array();
