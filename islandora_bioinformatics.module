@@ -104,7 +104,7 @@ function test_page_callback(){
   $object = 'islandora:93';
   $cmodels = array('islandora:sponge_cmodel');
   $relationships = array('isPartOf');
-  ros($object, $cmodels, $relationships);
+//  ros($object, $cmodels, $relationships);
   return '';
 }
 

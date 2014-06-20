@@ -3,7 +3,7 @@
 
 
 
-function islandora_object_related_islandora_objects($id=null, $cmodels=null,  $relationships=null, $subject=FALSE) {
+function i($id=null, $cmodels=null,  $relationships=null, $subject=FALSE) {
 
   // The default query finds objects that are targeting $id. If subject is set
   // to true then it finds objects that $id is targeting.
@@ -84,7 +84,8 @@ function islandora_object_related_islandora_objects($id=null, $cmodels=null,  $r
 /**
  *
  */
-function ros($object, $cmodels=null, $relationships=null){
+
+function islandora_object_related_islandora_objects($object=null, $cmodels=null,  $relationships=null) {
   $object = str_replace(':', '\:', $object);
 
   // CModel
