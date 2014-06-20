@@ -1,5 +1,8 @@
 <?php
 
+
+
+
 function islandora_object_related_islandora_objects($id=null, $cmodels=null,  $relationships=null, $subject=FALSE) {
 
   // The default query finds objects that are targeting $id. If subject is set
@@ -78,13 +81,50 @@ function islandora_object_related_islandora_objects($id=null, $cmodels=null,  $r
   return $related_objects;
 }
 
-function ros(){
+/**
+ *
+ */
+function ros($cmodel, $relationships=null){
+  $cmodel = str_replace(':', '\:', $cmodel);
+
+  if(empty($relationships)){
+    $FEDORA_RELS_EXT_RELATIONSHIPS =  array(
+      'fedoraRelationship',
+      'isPartOf',             'hasPart',
+      'isConstituentOf',      'hasConstituent',
+      'isMemberOf',           'hasMember',
+      'isSubsetOf',           'hasSubset',
+      'isMemberOfCollection', 'hasCollectionMember',
+      'isDerivationOf',       'hasDerivation',
+      'isDependentOf',        'hasDependent',
+      'isDescriptionOf',      'hasDescription',
+      'isMetadataFor',        'hasMetadata',
+      'isAnnotationOf',       'hasAnnotation',
+      'hasEquivalent'
+    );
+
+    $relationships = $FEDORA_RELS_EXT_RELATIONSHIPS;
+  }
+
+  $rel_subqueries = array();
+  foreach($relationships as $rel){
+    $rel_subqueries[] = "RELS_EXT_{$rel}_uri_mt:{$cmodel}";
+  }
+
+  $query = implode(' OR ',$rel_subqueries);
+
+  echo $query;
 
   $query_processor = new IslandoraSolrQueryProcessor();
 
-  $query = 'field:query';
-
 
   // This function accepts an IslandoraSolrQueryProcessor as a variable.
-  islandora_xacml_api_islandora_solr_query($query);
+  islandora_xacml_api_islandora_solr_query($query_processor);
+
+  $query_processor->buildAndExecuteQuery($query);
+
+  echo '<pre>';
+  var_dump($query_processor->islandoraSolrResult);
+  echo '</pre>';
 }
+

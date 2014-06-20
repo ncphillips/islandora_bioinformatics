@@ -90,7 +90,21 @@ function islandora_bioinformatics_menu(){
     'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
   );
 
+  $urls['tests'] = array(
+    'title' => 'Ros',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'test_page_callback',
+    'access callback' => true,
+  );
+
   return $urls;
+}
+
+function test_page_callback(){
+  $cmodel = 'islandora:specimen_cmodel';
+  $relationships = array('isPartOf');
+  ros($cmodel);
+  return '';
 }
 
 /**
