@@ -9,41 +9,40 @@ define("ISLANDORA_MODEL_URI", 'http://islandora.ca/ontology/model#');
  * Provides a number of helper functions for when working with CModel objects.
  */
 
-
+/**
+ * islandora_object_parent_model
+ *
+ * @param $object_id
+ * @return String|null
+ * The PID of the object's parent.
+ */
 function islandora_object_parent_model($object_id){
-  $query = "
-    PREFIX islandora: <" . ISLANDORA_RELS_EXT_URI . ">
-    SELECT ?id
-    FROM <#ri>
-    WHERE {
-      <info:fedora/$object_id> islandora:hasParentModel ?id
+  $object = islandora_object_load($object_id);
+  if($object){
+    $parents = $object->relationships->get(ISLANDORA_MODEL_URI, 'hasParentModel');
+
+    if (empty($parents)){
+      return $object->models[0];
     }
-  ";
 
-  $tuque = new IslandoraTuque();
-  $results = $tuque->repository->ri->sparqlQuery($query);
-
-  $parents = array();
-  foreach($results as $result){
-    $parents[] = $result['id']['value'];
+    return $parents[0];
   }
 
-  if (empty($parents)){
-    $object = islandora_object_load($object_id);
-    if($object)
-      $parents[] = $object->models[0];
-    else
-      return null;
-  }
-
-  return $parents;
+  return null;
 }
 
+/**
+ * islandora_object_models
+ *
+ * @param $object_id
+ *
+ * @return array
+ * The object's models array, minus the FedoraObject cmodel.
+ */
 function islandora_object_models($object_id){
   $object = islandora_object_load($object_id);
 
   return array_diff($object->models, array('fedora-system:FedoraObject-3.0'));
-
 }
 
 
