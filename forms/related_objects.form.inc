@@ -106,28 +106,25 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
 }
 
 function islandora_related_objects_submit(array $form, array &$form_state) {
-  //which action was selected form the drop down menu
-  $selected_option = $form_state['values']['selected'];
-  //the object in question
-  $object = $form_state['values']['object'];
-  //the selected table values
+  $object = $form_state['islandora']['object'];
+  $cmodel = $form_state['islandora']['cmodel'];
+  $relationships = $form_state['islandora']['relationships'];
+//  var_dump($relationships); exit();
+
+  // Checked values in the table.
   $table_values = $form_state['values']['table'];
 
+  // Action selected in teh drop down.
+  $selected_option = $form_state['values']['selected'];
   switch ($selected_option) {
-    //in case of relationship removal from the object
     case "remove":
-      /**
-       * @todo This should remove any relationship defined in the
-       * $form_state['relationships'] array...not just isPartOf
-       */
-      //for each table row
-      foreach ($table_values as $lines => $line) {
-        //if $line exists (if it is a selected table row)
-        if ($line) {
-          //load the object in the table row
-          $related_object = islandora_object_load($line);
-          //remove its relationship with the object in question
-          $related_object->relationships->remove(FEDORA_RELS_EXT_URI, 'isPartOf', $object->id);
+      foreach ($table_values as $lines => $selected_pid) {
+        if ($selected_pid) {
+          $related_object = islandora_object_load($selected_pid);
+
+          foreach($relationships as $pred){
+              $related_object->relationships->remove(null, $pred, $object->id);
+          }
         }
       }
       break;

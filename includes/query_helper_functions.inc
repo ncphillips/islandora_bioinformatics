@@ -141,16 +141,10 @@ function islandora_object_related_islandora_objects($object=null, $cmodels=null,
 
   $solr_results = $query_processor->islandoraSolrResult;
 
-  echo '<pre>';
-
   $results = array();
   foreach($solr_results['response']['objects'] as $object){
-    var_dump($object['PID']);
     $results[] = islandora_object_load($object['PID']);
   }
-
-
-  echo '</pre>';
   return $results;
 }
 

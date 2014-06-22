@@ -24,6 +24,7 @@ function islandora_object_has_people($object) {
   // the actual parent CModel.
   $cmodel_id = islandora_object_parent_model($object->id);
 
+  echo $cmodel_id;
   // NOTE: This function will check all of $object's CModel's supertypes as well.
   $relationships = islandora_cmodel_relationships_towards($cmodel_id);
 
@@ -36,7 +37,7 @@ function islandora_object_has_people($object) {
 }
 
 
-function islandora_related_objects_page_access(FedoraObject $object){
+function islandora_related_objects_page_access($object){
   $object_is_cmodel = $object->relationships->get(FEDORA_MODEL_URI, 'hasModel', 'fedora-system:ContentModel-3.0');
   $object_is_collection = $object->relationships->get(FEDORA_MODEL_URI, 'hasModel', 'islandora:collectionCModel');
 
