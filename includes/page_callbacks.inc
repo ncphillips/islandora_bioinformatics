@@ -10,7 +10,6 @@ function islandora_related_objects_page($object, $related_cmid_restriction=null)
 
   // Replace : with _ in CModel ID.
   $object_parent_model = islandora_object_parent_model($object->id);
-  echo $object_parent_model;
   $objects_models = islandora_object_models($object->id);
 
 

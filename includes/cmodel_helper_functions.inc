@@ -7,6 +7,7 @@ define("ISLANDORA_MODEL_URI", 'http://islandora.ca/ontology/model#');
  * @file cmodel_functions.php
  *
  * Provides a number of helper functions for when working with CModel objects.
+ * The goal is to eventually implement these functions as methods in a Class.
  */
 
 /**
