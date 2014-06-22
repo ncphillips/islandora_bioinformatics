@@ -24,7 +24,6 @@ function islandora_object_has_people($object) {
   // the actual parent CModel.
   $cmodel_id = islandora_object_parent_model($object->id);
 
-  echo $cmodel_id;
   // NOTE: This function will check all of $object's CModel's supertypes as well.
   $relationships = islandora_cmodel_relationships_towards($cmodel_id);
 

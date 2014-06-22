@@ -28,7 +28,6 @@ function islandora_object_parent_model($object_id){
     return $parents[0]['object']['value'];
   }
 
-  echo '</pre>';
   return null;
 }
 
