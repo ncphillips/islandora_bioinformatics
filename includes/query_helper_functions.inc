@@ -81,27 +81,23 @@ function i($id=null, $cmodels=null,  $relationships=null, $subject=FALSE) {
   return $related_objects;
 }
 
-/**
- *
- */
-
-function islandora_object_related_islandora_objects($object=null, $cmodels=null,  $relationships=null) {
-  $object = str_replace(':', '\:', $object);
+function islandora_object_related_islandora_objects($object_id, $cmodel_ids=array(),  $relationships=array()) {
+  $object_id = str_replace(':', '\:', $object_id);
 
   // CModel
-  if (empty($cmodels)){
-    $cmodels[] = '*';
-  }
-
   $cmodel_subquery = array();
-  foreach($cmodels as $cmodel){
-    $cmodel = str_replace(':', '\:', $cmodel);
-    $cmodel_subquery[] = "RELS_EXT_hasModel_uri_mt:$cmodel";
+  foreach($cmodel_ids as $cmodel_id){
+    $cmodel_id = str_replace(':', '\:', $cmodel_id);
+    $cmodel_subquery[] = "RELS_EXT_hasModel_uri_mt:$cmodel_id";
   }
 
-  $cmodel_query = '(' . implode(' OR ', $cmodel_subquery) . ')';
+  if ($cmodel_subquery)
+    $cmodel_query = '(' . implode(' OR ', $cmodel_subquery) . ')';
+  else
+    $cmodel_query = '';
 
-  // Relationship
+  // Relationships
+  // If the relationships field is empty then we use all Fedora rels.
   if(empty($relationships)){
     $FEDORA_RELS_EXT_RELATIONSHIPS =  array(
       'fedoraRelationship',
@@ -122,7 +118,7 @@ function islandora_object_related_islandora_objects($object=null, $cmodels=null,
 
   $rel_subqueries = array();
   foreach($relationships as $rel){
-    $rel_subqueries[] = "RELS_EXT_{$rel}_uri_mt:{$object}";
+    $rel_subqueries[] = "RELS_EXT_{$rel}_uri_mt:{$object_id}";
   }
 
   $rel_query = '(' . implode(' OR ',$rel_subqueries) . ')';
@@ -130,20 +126,21 @@ function islandora_object_related_islandora_objects($object=null, $cmodels=null,
   // Whole Query
   $query = $cmodel_query . ' AND ' . $rel_query;
 
-
+  // Solr Query Procesor
   $query_processor = new IslandoraSolrQueryProcessor();
 
-
-  // This function accepts an IslandoraSolrQueryProcessor as a variable.
+  // Apply XACML policies to query
   islandora_xacml_api_islandora_solr_query($query_processor);
 
+  // Execute Query
   $query_processor->buildAndExecuteQuery($query);
 
   $solr_results = $query_processor->islandoraSolrResult;
 
+  // Generate list of PIDs
   $results = array();
-  foreach($solr_results['response']['objects'] as $object){
-    $results[] = islandora_object_load($object['PID']);
+  foreach($solr_results['response']['objects'] as $object_id){
+    $results[] = islandora_object_load($object_id['PID']);
   }
   return $results;
 }

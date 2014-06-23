@@ -313,6 +313,14 @@ function islandora_cmodel_supertypes($cmodel_id) {
   return $supertypes;
 }
 
+/**
+ * islandora_cmodel_subtypes
+ *
+ * @param $cmodel_id
+ *
+ * @return array|null
+ * An array of object PIDs that
+ */
 function islandora_cmodel_subtypes($cmodel_id){
   $cmodel = islandora_cmodel_load($cmodel_id);
   if($cmodel){
