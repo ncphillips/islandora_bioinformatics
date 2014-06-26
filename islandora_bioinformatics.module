@@ -141,7 +141,7 @@ function islandora_cmodel_action_title($action, $cmodel){
 function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
   $themes = array();
 
-  $themes['islandora-bioinformatics-lab-object'] = array(
+  $themes['islandora_bioinformatics_lab_object'] = array(
     'file' => 'theme/theme.inc',
     'template' => 'theme/islandora-bioinformatics-lab-object',
     'variables' => array(
@@ -149,7 +149,7 @@ function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
     ),
   );
 
-  $themes['islandora-bioinformatics-project']    = array(
+  $themes['islandora_bioinformatics_project']    = array(
     'file' => 'theme/theme.inc',
     'template' => 'theme/islandora-bioinformatics-project',
     'variables' => array(
@@ -157,7 +157,7 @@ function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
     ),
   );
 
-  $themes['islandora-bioinformatics-person']     = array(
+  $themes['islandora_bioinformatics_person']     = array(
     'file' => 'theme/theme.inc',
     'template' => 'theme/islandora-bioinformatics-person',
     'variables' => array(
@@ -325,7 +325,9 @@ function islandora_bioinformatics_islandora_object_alter($object, array &$contex
   if(!$object_is_cmodel){
 
     // Parent CModel
-    $cmodel_id = islandora_object_parent_model($object->id);
+    // Don't use the islandora_object_parent_model function. It only works for
+    // objects that have been fully ingested.
+    $cmodel_id = $object->models[0];
 
     // Merges the object's models with
     $models = array_merge($object->models, islandora_cmodel_supertypes($cmodel_id));
@@ -430,8 +432,8 @@ function islandora_bioinformatics_form_islandora_related_objects_form_alter(&$fo
 function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel_objects_form_alter(&$form, &$form_state) {
   module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
-  $object = $form_state['islandora']['object'];
-  $people = $form_state['islandora']['related_objects'];
+  $object = $form_state['islandora']['object'] ? $form_state['islandora']['object'] : null;
+  $people = $form_state['islandora']['related_objects'] ? $form_state['islandora']['related_objects'] : array();
 
   $header = array(
     'name' => t('Name'),
@@ -467,4 +469,3 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
 
   return $form;
 }
-

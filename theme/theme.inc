@@ -13,8 +13,7 @@ function islandora_bioinformatics_preprocess_cmodel(array &$variables){
  *
  * Where THEME = islandora_person
  */
-function islandora_bioinformatics_preprocess_islandora_person(array &$variables) {
-
+function islandora_bioinformatics_preprocess_islandora_bioinformatics_person(array &$variables) {
   module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
   $islandora_object = $variables['islandora_object'];
@@ -40,8 +39,7 @@ function islandora_bioinformatics_preprocess_islandora_person(array &$variables)
  *
  * Where THEME = islandora_project
  */
-function islandora_bioinformatics_preprocess_islandora_project(array &$variables) {
-
+function islandora_bioinformatics_preprocess_islandora_bioinformatics_project(array &$variables) {
   module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
   $islandora_object = $variables['islandora_object'];
@@ -57,5 +55,4 @@ function islandora_bioinformatics_preprocess_islandora_project(array &$variables
   }
 
   $variables["project"] = project_mads_to_array($islandora_object);
-
 }

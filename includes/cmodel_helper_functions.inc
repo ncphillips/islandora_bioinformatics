@@ -323,12 +323,15 @@ function islandora_cmodel_supertypes($cmodel_id) {
  */
 function islandora_cmodel_subtypes($cmodel_id){
   $cmodel = islandora_cmodel_load($cmodel_id);
+
   if($cmodel){
-    $query_results = islandora_object_related_islandora_objects(
-      $cmodel_id,
-      array(),
-      array('isSubtypeOf')
+    $ro_args = array(
+      'object' => $cmodel_id,
+      'cmodels' => array(),
+      'relationships' => array('isSubtypeOf'),
     );
+
+    $query_results = islandora_object_related_islandora_objects($ro_args);
 
     $subtypes = array();
     foreach($query_results as $subtype){

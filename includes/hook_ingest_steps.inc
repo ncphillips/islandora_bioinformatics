@@ -51,18 +51,11 @@ function set_parent_relationships($args){
     // Get all of the Parent object's CModels.
     $parent_cmodels = islandora_object_models($parent_id);
 
-//    echo '<pre>';
-//    var_dump(array_keys($args['islandora']['step_storage']['xml_form_builder_association_step']));
-//    var_dump($args['islandora']['step_storage']['xml_form_builder_association_step']['association']['content_model']);
-//    echo '</pre>';
-
     // Get the New Object's CModel.
     $cmodel_id = $args['build_info']['args'][0]['models'];
 
     if(sizeof($cmodel_id) > 1) {
-      echo "Multiple cms";
       $cmodel_id = $args['islandora']['step_storage']['xml_form_builder_association_step']['association']['content_model'];
-
     }
     else{
       $cmodel_id = $cmodel_id[0];

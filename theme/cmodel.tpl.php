@@ -72,11 +72,13 @@ foreach($subtypes as $st_id){
 </thead>
 <tbody>
 <?
-$objects = islandora_object_related_islandora_objects(
-  $object->id, //object
-  array($object->id), //CModel
-  array('hasModel') //Relationships
+$ro_args = array(
+  'object' => $object->id,
+  'cmodels' => array($object->id),
+  'relationships' => array('hasModel'),
 );
+$objects = islandora_object_related_islandora_objects($ro_args);
+
 foreach($objects as $o){
   $m = islandora_object_parent_model($o->id)[0];
   echo "<tr>";

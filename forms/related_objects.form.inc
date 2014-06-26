@@ -6,8 +6,14 @@
 function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_id, $relationships=null){
   module_load_include('inc', 'islandora_bioinformatics', 'includes/query_helper_functions');
 
-  if(empty($related_objects))
-    $related_objects = islandora_object_related_islandora_objects($object_id, array($cmodel_id), $relationships);
+  if(empty($related_objects)){
+    $ro_args = array(
+      'object' => $object_id,
+      'cmodels' => array($cmodel_id),
+      'relationships' => $relationships,
+    );
+    $related_objects = islandora_object_related_islandora_objects($ro_args);
+  }
 
   $formstate['islandora']['object'] = $object_id;
   $formstate['islandora']['cmodel'] = $cmodel_id;
@@ -17,6 +23,9 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
   // Fedora Objects
   $object = islandora_object_load($object_id);
   $cmodel = islandora_cmodel_load($cmodel_id);
+
+  // Function Name Safe CModel ID
+  $cmodel_id_fns = str_replace(':','_', $cmodel_id);
 
   // Label
   $cmodel_label = $cmodel->label;
@@ -33,6 +42,44 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
     '#prefix' => '<h1>',
     '#suffix' => '</h1>',
   );
+
+  // Solr Filter
+  $form['solr_filter'] = array(
+    '#prefix'=> "<div id='solr_filter_$cmodel_id_fns'>",
+    '#suffix'=> '</div>',
+  );
+
+  $form['solr_filter']['fields'] = array(
+    '#type' => 'select',
+    '#title' => t('Field'),
+    '#options' => array(
+      'PID' => 'PID',
+      'RELS_EXT_hasModel_uri_mt' => 'Content Type',
+    ),
+  );
+
+  $form['solr_filter']['textfield'] = array(
+    '#type' => 'textfield',
+    '#default_value' => '*',
+    '#title' => 'Value'
+  );
+
+  $form['solr_filter']['apply_filter'] = array(
+    '#type' => 'submit',
+    '#value' => 'Apply Filter',
+    '#ajax' => array(
+      'callback' => 'add_filter_display',
+      'wrapper' => "solr_filter_current_filters_$cmodel_id_fns",
+    ),
+  );
+
+  $form['solr_filter']['current_filters'] = array(
+    '#prefix'=> "<div id='solr_filter_current_filters_$cmodel_id_fns'>",
+    '#suffix'=> '</div>',
+
+  );
+
+
 
   if($can_ingest) {
     $form['ingest'] = array(
@@ -56,7 +103,8 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
 
   // From our form there should be a list of specific operations that can be performed
   // on the objects in the list.
-  $form['selected'] = array(
+  $form['actions'] = array();
+  $form['actions']['selected'] = array(
     '#type' => 'select',
     '#title' => 'Actions',
     '#options' => array(
@@ -66,12 +114,14 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
   );
 
   // Submit button for form actions.
-  $form['submit'] =  array(
+  $form['actions']['submit'] =  array(
     '#type' => 'submit',
     '#value' => 'Submit',
     '#submit' => array('islandora_related_objects_submit'),
   );
 
+
+  // Related Objects Table
   $header = array(
     'id' => 'ID',
     'label' => 'Label',
@@ -93,14 +143,10 @@ function islandora_related_objects_form($form, &$formstate, $object_id, $cmodel_
     '#header' => $header,
     '#options' => $options,
     '#empty' => t("Null."),
-  );
+    '#prefix' => "<div id='solr_filter_$cmodel_id_fns'>",
+    '#suffix' => '</div>',
 
-  //adds object to the form
-  $form['object'] = array(
-    '#type' => 'value',
-    '#value' => $object,
   );
-
 
   return $form;
 }
@@ -129,4 +175,16 @@ function islandora_related_objects_submit(array $form, array &$form_state) {
       }
       break;
   }
+}
+
+
+function add_filter_display($form, &$form_state) {
+  $cmodel = $form_state['islandora']['cmodel'];
+  $cmodel_id_fns = str_replace(':', '_', $cmodel->id);
+  return array(
+    '#markup' => 'wat',
+    '#prefix'=> "<div id='solr_filter_current_filters_$cmodel_id_fns'>",
+    '#suffix'=> '</div>',
+
+  );
 }

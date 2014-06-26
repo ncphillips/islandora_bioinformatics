@@ -1,8 +1,108 @@
 <?php
+/**
+ * @file query_helper_functions.inc
+ *       Provides a couple generic functions for performing Solr/Sparql queries.
+ */
+
+/**
+ * islandora_object_related_islandora_objects
+ *
+ * @param       $object_id
+ * @param array $cmodel_ids
+ * @param array $relationships
+ * @code
+ *  array(
+ *    'object' => 'islandora:555',
+ *    'cmodels' => array('islandora:specimen_cmodel'),
+ *    'relationships' => array('isPartOf'),
+ *    'start' => 10,
+ *    'limit' => 25,
+ * )
+ *
+ * @endcode
+ *
+ * @return array
+ */
+function islandora_object_related_islandora_objects($args){
+  // Executes Solr Queries
+  $query_processor = new IslandoraSolrQueryProcessor();
+  islandora_xacml_api_islandora_solr_query($query_processor);
+
+  // Object, CModels, Relationships
+  $object_id = $args['object'] ? str_replace(':', '\:', $args['object']) : '*';
+  $cmodel_ids = $args['cmodels'] ? $args['cmodels'] : array();
+  $relationships = $args['relationships'] ? $args['relationships'] : array();
+
+  $query_parts = array(
+    // [0] => CModelSubquery
+    // [1] => RelationshipSubquery
+  );
+
+  // CModel rels queries
+  $cmodel_subquery = array();
+  foreach($cmodel_ids as $cmodel_id){
+    $cmodel_id = str_replace(':', '\:', $cmodel_id);
+    $cmodel_subquery[] = "RELS_EXT_hasModel_uri_mt:$cmodel_id";
+  }
+
+  if ($cmodel_subquery)
+    $query_parts[] = '(' . implode(' OR ', $cmodel_subquery) . ')';
+
+  // Relationships
+  // If the relationships field is empty then we use all Fedora rels.
+  if(empty($relationships)){
+    $FEDORA_RELS_EXT_RELATIONSHIPS =  array(
+      'fedoraRelationship',
+      'isPartOf',             'hasPart',
+      'isConstituentOf',      'hasConstituent',
+      'isMemberOf',           'hasMember',
+      'isSubsetOf',           'hasSubset',
+      'isMemberOfCollection', 'hasCollectionMember',
+      'isDerivationOf',       'hasDerivation',
+      'isDependentOf',        'hasDependent',
+      'isDescriptionOf',      'hasDescription',
+      'isMetadataFor',        'hasMetadata',
+      'isAnnotationOf',       'hasAnnotation',
+      'hasEquivalent'
+    );
+    $relationships = $FEDORA_RELS_EXT_RELATIONSHIPS;
+  }
+
+  // RELSEXT queries
+  $rel_subqueries = array();
+  foreach($relationships as $rel){
+    $rel_subqueries[] = "RELS_EXT_{$rel}_uri_mt:{$object_id}";
+  }
+
+  $query_parts[] = '(' . implode(' OR ',$rel_subqueries) . ')';
+
+  // Whole Query
+  $query = implode(' AND ', $query_parts);
+
+  // Execute Query
+  $query_processor->buildAndExecuteQuery($query);
+
+  $solr_results = $query_processor->islandoraSolrResult;
+
+  // Generate list of PIDs
+  $results = array();
+  foreach($solr_results['response']['objects'] as $object_id){
+    $results[] = islandora_object_load($object_id['PID']);
+  }
+
+  return $results;
+}
 
 
-
-
+/**
+ * The following function does basically the same thing as the one above it,
+ * except it does it using SPARQL instead of Solr. Probably not going to use it.
+ * @param null $id
+ * @param null $cmodels
+ * @param null $relationships
+ * @param bool $subject
+ *
+ * @return array
 function i($id=null, $cmodels=null,  $relationships=null, $subject=FALSE) {
 
   // The default query finds objects that are targeting $id. If subject is set
@@ -80,68 +180,4 @@ function i($id=null, $cmodels=null,  $relationships=null, $subject=FALSE) {
 
   return $related_objects;
 }
-
-function islandora_object_related_islandora_objects($object_id, $cmodel_ids=array(),  $relationships=array()) {
-  $object_id = str_replace(':', '\:', $object_id);
-
-  // CModel
-  $cmodel_subquery = array();
-  foreach($cmodel_ids as $cmodel_id){
-    $cmodel_id = str_replace(':', '\:', $cmodel_id);
-    $cmodel_subquery[] = "RELS_EXT_hasModel_uri_mt:$cmodel_id";
-  }
-
-  if ($cmodel_subquery)
-    $cmodel_query = '(' . implode(' OR ', $cmodel_subquery) . ')';
-  else
-    $cmodel_query = '';
-
-  // Relationships
-  // If the relationships field is empty then we use all Fedora rels.
-  if(empty($relationships)){
-    $FEDORA_RELS_EXT_RELATIONSHIPS =  array(
-      'fedoraRelationship',
-      'isPartOf',             'hasPart',
-      'isConstituentOf',      'hasConstituent',
-      'isMemberOf',           'hasMember',
-      'isSubsetOf',           'hasSubset',
-      'isMemberOfCollection', 'hasCollectionMember',
-      'isDerivationOf',       'hasDerivation',
-      'isDependentOf',        'hasDependent',
-      'isDescriptionOf',      'hasDescription',
-      'isMetadataFor',        'hasMetadata',
-      'isAnnotationOf',       'hasAnnotation',
-      'hasEquivalent'
-    );
-    $relationships = $FEDORA_RELS_EXT_RELATIONSHIPS;
-  }
-
-  $rel_subqueries = array();
-  foreach($relationships as $rel){
-    $rel_subqueries[] = "RELS_EXT_{$rel}_uri_mt:{$object_id}";
-  }
-
-  $rel_query = '(' . implode(' OR ',$rel_subqueries) . ')';
-
-  // Whole Query
-  $query = $cmodel_query . ' AND ' . $rel_query;
-
-  // Solr Query Procesor
-  $query_processor = new IslandoraSolrQueryProcessor();
-
-  // Apply XACML policies to query
-  islandora_xacml_api_islandora_solr_query($query_processor);
-
-  // Execute Query
-  $query_processor->buildAndExecuteQuery($query);
-
-  $solr_results = $query_processor->islandoraSolrResult;
-
-  // Generate list of PIDs
-  $results = array();
-  foreach($solr_results['response']['objects'] as $object_id){
-    $results[] = islandora_object_load($object_id['PID']);
-  }
-  return $results;
-}
-
+ */
