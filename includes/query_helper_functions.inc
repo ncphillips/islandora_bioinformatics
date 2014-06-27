@@ -30,10 +30,10 @@ function islandora_object_related_islandora_objects($args){
   islandora_xacml_api_islandora_solr_query($query_processor);
 
   // Object, CModels, Relationships
-  $object_id = $args['object'] ? str_replace(':', '\:', $args['object']) : '*';
-  $cmodel_ids = $args['cmodels'] ? $args['cmodels'] : array();
-  $relationships = $args['relationships'] ? $args['relationships'] : array();
-  $other = $args['other'] ? $args['other'] : array();
+  $object_id = !empty($args['object']) ? str_replace(':', '\:', $args['object']) : '*';
+  $cmodel_ids = !empty($args['cmodels']) ? $args['cmodels'] : array();
+  $relationships = !empty($args['relationships']) ? $args['relationships'] : array();
+  $other = !empty($args['other']) ? $args['other'] : array();
 
   $query_parts = array();
 

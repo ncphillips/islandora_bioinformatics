@@ -50,6 +50,15 @@ function islandora_bioinformatics_menu(){
   $urls = array();
 
   // Default Functionality
+  $urls['islandora/model/%islandora_cmodel'] = array(
+      'title callback' => 'islandora_drupal_title',
+      'title arguments' => array(2),
+      'page callback' => 'islandora_view_object',
+      'page arguments' => array(2),
+      'type' => MENU_NORMAL_ITEM,
+      'access callback' => 'islandora_object_access_callback',
+      'access arguments' => array(ISLANDORA_VIEW_OBJECTS, 2),
+  );
   $urls['islandora/object/%islandora_object/related_content'] = array(
     'title' => 'Related Content',
     'page callback' => 'islandora_related_objects_page',
