@@ -79,8 +79,9 @@ $ro_args = array(
 );
 $objects = islandora_object_related_islandora_objects($ro_args);
 
-foreach($objects as $o){
-  $m = islandora_object_parent_model($o->id)[0];
+foreach($objects as $o_id){
+  $m = islandora_object_parent_model($o_id);
+  $o = islandora_object_load($o_id);
   echo "<tr>";
   echo "<td>{$o->label}</td>";
   echo "<td>{$m}</td>";
