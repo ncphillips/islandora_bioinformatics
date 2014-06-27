@@ -381,15 +381,14 @@ function islandora_bioinformatics_form_islandora_related_objects_form_alter(&$fo
   $hooks = array();
 
   // Object
-  $object = islandora_object_load($formstate['islandora']['object']);
+  $object = islandora_object_load($formstate['islandora']['object_id']);
 
   // Related CModel
-  $related_cmodel_id = $formstate['islandora']['cmodel'];
+  $related_cmodel_id = $formstate['islandora']['cmodel_id'];
 
   // {Related CModel} UNION {Related CModel Supertypes}
   $related_cmodel_types = array_merge(array($related_cmodel_id),
                                       islandora_cmodel_supertypes($related_cmodel_id));
-
 
   $rcm_count = 0;
   foreach($related_cmodel_types as $rcm){

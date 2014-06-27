@@ -17,6 +17,7 @@
  *    'relationships' => array('isPartOf'),
  *    'start' => 10,
  *    'limit' => 25,
+ *    'other' => 'PID:*', // Some Solr query
  * )
  *
  * @endcode
@@ -32,11 +33,12 @@ function islandora_object_related_islandora_objects($args){
   $object_id = $args['object'] ? str_replace(':', '\:', $args['object']) : '*';
   $cmodel_ids = $args['cmodels'] ? $args['cmodels'] : array();
   $relationships = $args['relationships'] ? $args['relationships'] : array();
+  $other = $args['other'] ? $args['other'] : array();
 
-  $query_parts = array(
-    // [0] => CModelSubquery
-    // [1] => RelationshipSubquery
-  );
+  $query_parts = array();
+
+  if($other)
+    $query_parts[] = $other;
 
   // CModel rels queries
   $cmodel_subquery = array();
@@ -79,6 +81,8 @@ function islandora_object_related_islandora_objects($args){
   // Whole Query
   $query = implode(' AND ', $query_parts);
 
+  file_put_contents('/Users/nolan/Desktop/query.txt', $query);
+
   // Execute Query
   $query_processor->buildAndExecuteQuery($query);
 
@@ -87,7 +91,7 @@ function islandora_object_related_islandora_objects($args){
   // Generate list of PIDs
   $results = array();
   foreach($solr_results['response']['objects'] as $object_id){
-    $results[] = islandora_object_load($object_id['PID']);
+    $results[] = $object_id['PID'];
   }
 
   return $results;
