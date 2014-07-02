@@ -17,7 +17,7 @@ module_load_include('inc', 'islandora_bioinformatics', 'includes/hook_ingest_ste
 module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callbacks');
 
 // Drupal Forms
-module_load_include('inc', 'islandora_bioinformatics', 'forms/related_objects.form');
+
 module_load_include('inc', 'islandora_bioinformatics', 'forms/project_assign_person.form');
 
 // Page Callbacks
@@ -69,34 +69,7 @@ function islandora_bioinformatics_menu(){
     'type' => MENU_LOCAL_TASK,
   );
 
-  $urls['islandora/object/%islandora_object/related_content'] = array(
-    'title' => 'Related Content',
-    'page callback' => 'islandora_related_objects_page',
-    'page arguments' => array(2),
-    'access callback' => 'islandora_related_objects_page_access',
-    'access arguments' => array(2),
-    'type' => MENU_LOCAL_TASK,
-  );
 
-  $urls['islandora/object/%islandora_object/related_content/add/%islandora_cmodel'] = array(
-    'title callback' => 'islandora_cmodel_action_title',
-    'title arguments' => array('Add', 5),
-    'page callback' => 'islandora_related_objects_add_callback',
-    'page arguments' => array(2, 5),
-    'access callback' => 'islandora_object_access',
-    'access arguments' => array(ISLANDORA_METADATA_EDIT, 2),
-    'type' => MENU_CALLBACK,
-  );
-
-  $urls['islandora/object/%islandora_object/related_content/ingest/%islandora_cmodel'] = array(
-    'title callback' => 'islandora_cmodel_action_title',
-    'title arguments' => array('Ingest', 5),
-    'page callback' => 'islandora_related_objects_ingest_callback',
-    'page arguments' => array(2, 5),
-    'access callback' => 'islandora_object_access',
-    'access arguments' => array(ISLANDORA_INGEST, 2),
-    'type' => MENU_CALLBACK,
-  );
 
   // Custom Tab
   $urls['islandora/object/%islandora_object/people'] = array(
@@ -328,6 +301,34 @@ function islandora_bioinformatics_islandora_xml_form_builder_form_associations()
   );
 
   return $form_associations;
+}
+
+/**
+ * * @return
+ *   An associative array whose keys define form_ids and whose values are an
+ *   associative array defining the following keys:
+ *   - callback: The name of the form builder function to invoke. This will be
+ *     used for the base form ID, for example, to target a base form using
+ *     hook_form_BASE_FORM_ID_alter().
+ *   - callback arguments: (optional) Additional arguments to pass to the
+ *     function defined in 'callback', which are prepended to $args.
+ *   - wrapper_callback: (optional) The name of a form builder function to
+ *     invoke before the form builder defined in 'callback' is invoked. This
+ *     wrapper callback may prepopulate the $form array with form elements,
+ *     which will then be already contained in the $form that is passed on to
+ *     the form builder defined in 'callback'. For example, a wrapper callback
+ *     could setup wizard-alike form buttons that are the same for a variety of
+ *     forms that belong to the wizard, which all share the same wrapper
+ *     callback.
+ */
+function islandora_bioinformatics_forms(){
+  $forms = array();
+
+  $forms['islandora_related_objects_add_form'] = array(
+    'callback' => 'islandora_related_objects_form',
+    'arguments' => array()
+
+  );
 }
 
 //

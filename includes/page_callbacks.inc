@@ -119,11 +119,5 @@ function islandora_related_objects_ingest_callback($object, $cmodel){
   return drupal_get_form('islandora_ingest_form', $config_data);
 }
 
-function islandora_related_objects_add_callback($object, $cmodel) {
-
-  module_load_include('inc', 'islandora_bioinformatics', 'includes/ingest.form');
-  return drupal_get_form('related_objects_add');
-}
-
 
 
