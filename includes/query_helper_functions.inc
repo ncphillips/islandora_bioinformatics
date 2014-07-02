@@ -15,8 +15,7 @@
  *    'object' => 'islandora:555',
  *    'cmodels' => array('islandora:specimen_cmodel'),
  *    'relationships' => array('isPartOf'),
- *    'start' => 10,
- *    'limit' => 25,
+ *    'page' => 2,
  *    'other' => 'PID:*', // Some Solr query
  * )
  *
@@ -33,6 +32,7 @@ function islandora_object_related_islandora_objects($args){
   $object_id = !empty($args['object']) ? str_replace(':', '\:', $args['object']) : '*';
   $cmodel_ids = !empty($args['cmodels']) ? $args['cmodels'] : array();
   $relationships = !empty($args['relationships']) ? $args['relationships'] : array();
+  $page = !empty($args['page']) ? $args['page'] : 0;
   $other = !empty($args['other']) ? $args['other'] : array();
 
   $query_parts = array();
@@ -81,17 +81,27 @@ function islandora_object_related_islandora_objects($args){
   // Whole Query
   $query = implode(' AND ', $query_parts);
 
-  file_put_contents('/Users/nolan/Desktop/query.txt', $query);
+  // Set page
+  $_GET['page'] =  $page;
+
+//  file_put_contents('/Users/nolan/Desktop/query.txt', $query);
 
   // Execute Query
   $query_processor->buildAndExecuteQuery($query);
 
   $solr_results = $query_processor->islandoraSolrResult;
 
-  // Generate list of PIDs
   $results = array();
-  foreach($solr_results['response']['objects'] as $object_id){
-    $results[] = $object_id['PID'];
+  if(!empty($solr_results)){
+//    echo '<pre>';
+//    var_dump(array_keys($solr_results['response']));
+//    echo '</pre>';
+    // Generate list of PIDs
+    foreach($solr_results['response']['objects'] as $object_id){
+      $results['ids'][] = $object_id['PID'];
+    }
+    $results['num_found'] = $solr_results['response']['numFound'];
+    $results['num_pages'] = (int)($results['num_found'] / variable_get('islandora_solr_num_of_results', 5));
   }
 
   return $results;

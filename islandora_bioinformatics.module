@@ -59,6 +59,16 @@ function islandora_bioinformatics_menu(){
       'access callback' => 'islandora_object_access_callback',
       'access arguments' => array(ISLANDORA_VIEW_OBJECTS, 2),
   );
+
+  $urls['islandora/model/%islandora_cmodel/content'] = array(
+    'title' => 'Content',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_related_objects_form', 2, 'islandora:specimen_cmodel', array('hasModel')),
+    'access callback' => true,
+//    'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
+    'type' => MENU_LOCAL_TASK,
+  );
+
   $urls['islandora/object/%islandora_object/related_content'] = array(
     'title' => 'Related Content',
     'page callback' => 'islandora_related_objects_page',
@@ -344,6 +354,12 @@ function islandora_bioinformatics_islandora_object_alter($object, array &$contex
 
     // Creates a hasParentModel relationship towards the CModel initially chosen.
     $object->relationships->add(ISLANDORA_MODEL_URI, 'hasParentModel', $cmodel_id);
+
+    echo '<pre>';
+    var_dump($object);
+    echo '<pre>';
+    foreach($models as $model){
+    }
   }
 }
 

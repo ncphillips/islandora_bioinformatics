@@ -34,6 +34,8 @@ function islandora_related_objects_form($form, &$form_state, $object_id='', $cmo
   !empty($form_state['islandora']['cmodel_id']) ? : ($form_state['islandora']['cmodel_id'] = $cmodel_id);
   !empty($form_state['islandora']['relationships']) ? : ($form_state['islandora']['relationships'] = $relationships);
   !empty($form_state['islandora']['page']) ? : ($form_state['islandora']['page'] = 0);
+  !empty($form_state['islandora']['num_pages']) ? : $form_state['islandora']['num_pages'] = 0;
+  !empty($form_state['islandora']['num_found']) ? : $form_state['islandora']['num_found'] = 0;
   !empty($form_state['islandora']['solr_filters']) ? : ($form_state['islandora']['solr_filters'] = array());
   !empty($form_state['islandora']['refresh_query']) ? : ($form_state['islandora']['refresh_query'] = TRUE);
 
@@ -53,16 +55,21 @@ function islandora_related_objects_form($form, &$form_state, $object_id='', $cmo
     }
 
     // Execute Query
-    $related_objects_ids = islandora_object_related_islandora_objects(array(
-        'object' => $object_id,
+    $related_objects_query_results = islandora_object_related_islandora_objects(array(
+        'object' => $object->id,
         'cmodels' => array($cmodel_id),
         'relationships' => $relationships,
+        'page' => $form_state['islandora']['page'],
         'other' => $other_queries,
       )
     );
 
+    $related_objects_ids = $related_objects_query_results['ids'];
+
     // Add values to the $form_state
     $form_state['islandora']['related_objects_ids'] = $related_objects_ids;
+    $form_state['islandora']['num_found'] = $related_objects_query_results['num_found'];
+    $form_state['islandora']['num_pages'] = $related_objects_query_results['num_pages'];
   }
   else{
     // Otherwise fetch them.
@@ -203,6 +210,10 @@ function islandora_related_objects_form($form, &$form_state, $object_id='', $cmo
     ),
   );
 
+  $form['last_page'] = array(
+    '#markup' => $form_state['islandora']['num_pages'],
+  );
+
   $header = array(
     'id' => 'ID',
     'label' => 'Label',
@@ -264,7 +275,12 @@ function islandora_related_objects_ajax_response(&$form_state){
 
     // Next Page
     elseif($trigger['#value'] == 'next'){
-      $i['page']++;
+      if($i['page'] < $form_state['islandora']['num_pages']){
+        $i['page']++;
+      }
+      else {
+        $i['refresh_query'] = FALSE;
+      }
     }
 
     // Previous Page
@@ -277,8 +293,6 @@ function islandora_related_objects_ajax_response(&$form_state){
       }
     }
   }
-
-  $_GET['page'] = $i['page'];
 }
 
 function islandora_related_objects_submit(array $form, array &$form_state) {
@@ -311,3 +325,6 @@ function islandora_related_objects_ajax($form, &$form_state) {
   return $form;
 }
 
+function page_navigation_element(&$form_state){
+
+}

@@ -66,6 +66,9 @@ function islandora_related_objects_ingest_callback($object, $cmodel){
     "islandora_related_{$cmid}_objects_ingest",
   );
 
+  $data = array(
+    'collection' => null,
+  );
   drupal_alter($hooks, $data);
 
 
@@ -117,7 +120,9 @@ function islandora_related_objects_ingest_callback($object, $cmodel){
 }
 
 function islandora_related_objects_add_callback($object, $cmodel) {
-  return l('Back to object', $_SERVER['HTTP_REFERER']);
+
+  module_load_include('inc', 'islandora_bioinformatics', 'includes/ingest.form');
+  return drupal_get_form('related_objects_add');
 }
 
 
