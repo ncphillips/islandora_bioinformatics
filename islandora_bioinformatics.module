@@ -6,8 +6,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
 ini_set('display_startup_errors', TRUE);
 
-// CModels
-module_load_include('inc', 'islandora_bioinformatics', 'includes/cmodel_helper_functions');
+
 
 // Islandora hook implementations
 module_load_include('inc', 'islandora_bioinformatics', 'includes/hook_view_object');
@@ -50,25 +49,6 @@ function islandora_bioinformatics_menu(){
   $urls = array();
 
   // Default Functionality
-  $urls['islandora/model/%islandora_cmodel'] = array(
-      'title callback' => 'islandora_drupal_title',
-      'title arguments' => array(2),
-      'page callback' => 'islandora_view_object',
-      'page arguments' => array(2),
-      'type' => MENU_NORMAL_ITEM,
-      'access callback' => 'islandora_object_access_callback',
-      'access arguments' => array(ISLANDORA_VIEW_OBJECTS, 2),
-  );
-
-  $urls['islandora/model/%islandora_cmodel/content'] = array(
-    'title' => 'Content',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_related_objects_form', 2, 'islandora:specimen_cmodel', array('hasModel')),
-    'access callback' => true,
-//    'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
-    'type' => MENU_LOCAL_TASK,
-  );
-
 
 
   // Custom Tab
@@ -100,24 +80,7 @@ function test_page_callback(){
   return '';
 }
 
-/**
- * islandora_cmodel_action_title
- *
- * @param $action
- * @param $cmodel
- *
- * @return string
- *
- * Generates a page title given an 'action' and a 'cmodel'.
- *
- * For example:
- *
- *    Add Specimen
- *    Ingest Project
- */
-function islandora_cmodel_action_title($action, $cmodel){
-  return "{$action} {$cmodel->label}";
-}
+
 
 /**
  * Implements hook_theme()
@@ -152,14 +115,6 @@ function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
   $themes['islandora_bioinformatics_person']     = array(
     'file' => 'theme/theme.inc',
     'template' => 'theme/islandora-bioinformatics-person',
-    'variables' => array(
-      'object' => NULL,
-    ),
-  );
-
-  $themes['cmodel'] = array(
-    'file' => 'theme/theme.inc',
-    'template' => 'theme/cmodel',
     'variables' => array(
       'object' => NULL,
     ),
@@ -303,66 +258,7 @@ function islandora_bioinformatics_islandora_xml_form_builder_form_associations()
   return $form_associations;
 }
 
-/**
- * * @return
- *   An associative array whose keys define form_ids and whose values are an
- *   associative array defining the following keys:
- *   - callback: The name of the form builder function to invoke. This will be
- *     used for the base form ID, for example, to target a base form using
- *     hook_form_BASE_FORM_ID_alter().
- *   - callback arguments: (optional) Additional arguments to pass to the
- *     function defined in 'callback', which are prepended to $args.
- *   - wrapper_callback: (optional) The name of a form builder function to
- *     invoke before the form builder defined in 'callback' is invoked. This
- *     wrapper callback may prepopulate the $form array with form elements,
- *     which will then be already contained in the $form that is passed on to
- *     the form builder defined in 'callback'. For example, a wrapper callback
- *     could setup wizard-alike form buttons that are the same for a variety of
- *     forms that belong to the wizard, which all share the same wrapper
- *     callback.
- */
-function islandora_bioinformatics_forms(){
-  $forms = array();
 
-  $forms['islandora_related_objects_add_form'] = array(
-    'callback' => 'islandora_related_objects_form',
-    'arguments' => array()
-
-  );
-}
-
-//
-/**
- * Implements hook_islandora_object_alter
- *
- * SUBTYPING - Required
- *
- * This function creates a fedora:hasModel relationship between the $object
- * and all of it's CModel's supertypes. Should not be run for CModels.
- */
-function islandora_bioinformatics_islandora_object_alter($object, array &$context) {
-  $object_is_cmodel = $object->relationships->get(FEDORA_MODEL_URI, 'hasModel', 'fedora-system:ContentModel-3.0');
-  if(!$object_is_cmodel){
-
-    // Parent CModel
-    // Don't use the islandora_object_parent_model function. It only works for
-    // objects that have been fully ingested.
-    $cmodel_id = $object->models[0];
-
-    // Merges the object's models with
-    $models = array_merge($object->models, islandora_cmodel_supertypes($cmodel_id));
-    $object->models = $models;
-
-    // Creates a hasParentModel relationship towards the CModel initially chosen.
-    $object->relationships->add(ISLANDORA_MODEL_URI, 'hasParentModel', $cmodel_id);
-
-    echo '<pre>';
-    var_dump($object);
-    echo '<pre>';
-    foreach($models as $model){
-    }
-  }
-}
 
 
 /**
@@ -388,65 +284,7 @@ function islandora_bioinformatics_islandora_islandora_project_cmodel_related_obj
   }
 }
 
-/**
- * Implements hook_form_islandora_related_objects_form_alter()
- *
- * RELATED CONTENT - Required.
- *
- * Dynamically calls three hooks for altering a related content form:
- *
- *  1. form_islandora_OBJECT_CMODEL_related_objects_form
- *  2. form_islandora_related_RELATED_CMODEL_objects_form
- *  3. form_islandora_OBJECT_CMODEL_related_RELATED_CMODEL_objects_formo
- *
- * Each of these hooks are inherited. So if A is a supertype of B then
- * 'hook_form_islandora_A_related_objects_form_alter()' will also affect
- * the form for B.
- */
-function islandora_bioinformatics_form_islandora_related_objects_form_alter(&$form, &$formstate){
-  $hooks = array();
 
-  // Object
-  $object = islandora_object_load($formstate['islandora']['object_id']);
-
-  // Related CModel
-  $related_cmodel_id = $formstate['islandora']['cmodel_id'];
-
-  // {Related CModel} UNION {Related CModel Supertypes}
-  $related_cmodel_types = array_merge(array($related_cmodel_id),
-                                      islandora_cmodel_supertypes($related_cmodel_id));
-
-  $rcm_count = 0;
-  foreach($related_cmodel_types as $rcm){
-    // Replace : with _ for hook name generation.
-    $rcm_str_replaced  = str_replace(':', '_', $rcm);
-
-    // Replace it in the array of Related CModel Types
-    $related_cmodel_types[$rcm_count] = $rcm_str_replaced;
-
-    // Hook function string.
-    $hooks[] = "form_islandora_related_{$rcm_str_replaced}_objects_form";
-    $rcm_count++;
-  }
-
-  // Remove the FedoraObject-3.0 from the list of the Object's CModels.
-  $object_models = array_diff($object->models, array('fedora-system:FedoraObject-3.0'));
-
-  // Iterate through the Object's CModels.
-  foreach($object_models as $ocm){
-    // Replate : with _ for hook name generation.
-    $object_cmodel = str_replace(':', '_', $ocm);
-
-    $hooks[] = "form_islandora_{$object_cmodel}_related_objects_form";
-
-    foreach($related_cmodel_types as $rcm){
-      $hooks[] = "form_islandora_{$object_cmodel}_related_{$rcm}_objects_form";
-    }
-  }
-
-  // Alter forms.
-  drupal_alter($hooks, $form, $formstate);
-}
 
 /**
  * Implements hook_form_FORM_ID_alter()
