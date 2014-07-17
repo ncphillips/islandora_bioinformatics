@@ -57,7 +57,7 @@ function islandora_bioinformatics_menu(){
     'type' => MENU_LOCAL_TASK,
     'description' => 'People assigned to this project.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_related_objects_form', 2, 'islandora:person_cmodel'),
+    'page arguments' => array('islandora_related_content_form', 2, 'islandora:person_cmodel'),
     'access callback' => 'islandora_related_people_access',
     'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
   );
@@ -148,6 +148,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
   $lab_object = islandora_cmodel_create('islandora:lab_object_cmodel',  'Lab Object', "$module_path/xml/cmodels/lab_object_dscm.xml");
   $project    = islandora_cmodel_create('islandora:project_cmodel',     'Project',    "$module_path/xml/cmodels/project_dscm.xml");
   $person     = islandora_cmodel_create('islandora:person_cmodel',      'Person',     "$module_path/xml/cmodels/person_dscm.xml");
+  $cat        = islandora_cmodel_create('islandora:cat_cmodel',         'Cats are People too',        "$module_path/xml/cmodels/person_dscm.xml", 'islandora:person_cmodel');
 
   // CModel: person isMemberOf project
   islandora_cmodel_add_relationship($person, FEDORA_RELS_EXT_URI, 'isMemberOf', $project->id, FALSE);
@@ -155,6 +156,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
   $objects[] = $lab_object;
   $objects[] = $project;
   $objects[] = $person;
+  $objects[] = $cat;
 
   // Collections
   $collections = array(
