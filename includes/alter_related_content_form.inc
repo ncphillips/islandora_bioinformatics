@@ -13,7 +13,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmod
 
   $specimens = $form_state['islandora']['related_objects_ids'];
 
- t // Headers
+ // Headers
   $header = array(
     'shortName' => t('Name'),
     'genus_species' => t('Genus species'),
