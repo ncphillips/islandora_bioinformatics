@@ -18,6 +18,9 @@ module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callback
 // Page Callbacks
 module_load_include('inc', 'islandora_bioinformatics', 'includes/page_callbacks');
 
+// Related Content Form Alters
+module_load_include('inc', 'islandora_bioinformatics', 'includes/alter_related_content_form');
+
 /**
  * Implements hook_menu()
  */
@@ -430,51 +433,4 @@ function _assay_autocomplete($string) {
 }
 
 
-function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmodel_objects_form_alter($form, &$form_state) {
-  /**
-   * @author Brent Mitton
-   * @param &$form
-   * @param &$form_state
-   *
-   * Alters the islandora_related_objects_base form to display specimen information.
-   */
-  $specimens = $form_state['islandora']['related_objects_ids'];
-
-  // Adding in these fields.
-  $header = array(
-    'lab_id' => t("Lab ID"),
-    'type' => t("Specimen Type"),
-    'genus' => t("Genus"),
-    'species' => t("Species"),
-  );
-
-  // Merge with the original headers.
-  $header = array_merge($header, $form['content_table_select']['table']['#header']) ;
-
-  // Unset a couple we don't want.
-  unset($header['id']);
-  unset($header['label']);
-
-  $options = $form['content_table_select']['table']['#options'];
-
-  module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
-  foreach ($specimens as $specimen_id) {
-    $specimen = islandora_object_load($specimen_id);
-    $specimen_eml = specimen_EML_to_array($specimen);
-    $specimen_url = "<a href='/islandora/object/{$specimen_id}'>{$specimen_eml['identifier']}</a>";
-
-    $options[$specimen_id]['lab_id'] = $specimen_url;
-    $options[$specimen_id]['type'] = (string)$specimen_eml['type'];
-    $options[$specimen_id]['genus'] = (string)$specimen_eml['genus'];
-    $options[$specimen_id]['species'] = (string)$specimen_eml['species'];
-    $options[$specimen_id]['#attributes'] = array("style" => "max-height: 100px;");
-  }
-
-  $form['content_table_select']['table']['#type'] =  'tableselect';
-  $form['content_table_select']['table']['#header'] =  $header;
-  $form['content_table_select']['table']['#options'] =  $options;
-  $form['content_table_select']['table']['#empty'] =  t("There are no related specimens.");
-
-  return $form;
-}
 

@@ -13,23 +13,23 @@ function specimen_EML_to_array($specimen_object) {
   $ns = "eml://ecoinformatics.org/eml-2.1.0";
 
   $eml = array();
-  $specimen_object = islandora_object_load('islandora:691');
 
   $xml = new SimpleXMLElement($specimen_object["EML"]->content);
-  $attributes = $xml->attributes();
+  $attributes = is_object($xml->attributes()) ? $xml->attributes() : false;
 
 
-  $xml = $xml->dataset;
+  $xml = is_object($xml->dataset) ? $xml->dataset : false;
 
-  $eml['abstract'] = (string)$xml->abstract->para;
-  $eml['packageId'] = (string)$attributes['packageId'];
+  $eml['abstract'] = $xml ? (string)$xml->abstract->para : '';
+  $eml['packageId'] = $attributes ? (string)$attributes['packageId'] : '';
   $eml['shortName'] = (string)$xml->shortName;
   $eml['system'] = (string)$attributes['system'];
   $eml['title'] = (string)$xml->title;
 
   // Specimen Keywords
   $eml['keywords'] = array();
-  foreach($xml->keywordSet->children() as $keyword){
+  $keywordSet = is_object($xml->keywordSet) ? $xml->keywordSet->children() : array();
+  foreach($keywordSet as $keyword){
     if((string)$keyword)
       $eml['keywords'][] = (string) $keyword;
   }
@@ -37,40 +37,44 @@ function specimen_EML_to_array($specimen_object) {
   // Taxonomic Coverage
   $eml['taxonomicCoverage']['genus'] = '';
   $eml['taxonomicCoverage']['species'] = '';
-  $classifications = $xml->coverage->taxonomicCoverage;
-  foreach($classifications->taxonomicClassification as $classification){
-    $taxonRankName = (string)$classification->taxonRankName;
-    switch($taxonRankName){
-      case 'Species':
-        $eml['taxonomicCoverage']['species'] = (string)$classification->taxonRankValue;
-        break;
-      case 'Genus':
-        $eml['taxonomicCoverage']['genus'] = (string)$classification->taxonRankValue;
-        break;
+
+  if (is_object($xml->coverage) ? ($coverage = $xml->coverage) : false){
+
+    $tc = is_object($coverage->taxonomicCoverage) ? $coverage->taxonomicCoverage->taxonomicClassification : array();
+
+    foreach($tc as $classification){
+      $taxonRankName = (string)$classification->taxonRankName;
+      switch($taxonRankName){
+        case 'Species':
+          $eml['taxonomicCoverage']['species'] = (string)$classification->taxonRankValue;
+          break;
+        case 'Genus':
+          $eml['taxonomicCoverage']['genus'] = (string)$classification->taxonRankValue;
+          break;
+      }
     }
+
+    // Geographic Coverage
+    $gc = is_object($coverage->geographicCoverage) ? $coverage->geographicCoverage : array();
+    $coord = $gc->boundingCoordinates;
+    $alt = $coord->boundingAltitudes;
+    $eml['geographicCoverage'] = array(
+      'description' => (string)$gc->geographicDescription,
+      'coordinates' => array(
+        'east' => (string)$coord->eastBoundingCoordinate,
+        'west' => (string)$coord->westBoundingCoordinate,
+        'north' => (string)$coord->northBoundingCoordinate,
+        'south' => (string)$coord->southBoundingCoordinate,
+      ),
+      'altitudes' => array(
+        'max' => $alt->altitudeMaximum,
+        'min' => $alt->altitudeMinimum,
+        'units' => $alt->altitudeUnits,
+      )
+    );
+
+    /** @todo Temporal Coverage */
   }
-
-  // Geographic Coverage
-  $gc = $xml->coverage->geographicCoverage;
-  $coord = $gc->boundingCoordinates;
-  $alt = $coord->boundingAltitudes;
-  $eml['geographicCoverage'] = array(
-    'description' => (string)$gc->geographicDescription,
-    'coordinates' => array(
-      'east' => (string)$coord->eastBoundingCoordinate,
-      'west' => (string)$coord->westBoundingCoordinate,
-      'north' => (string)$coord->northBoundingCoordinate,
-      'south' => (string)$coord->southBoundingCoordinate,
-    ),
-    'altitudes' => array(
-      'max' => $alt->altitudeMaximum,
-      'min' => $alt->altitudeMinimum,
-      'units' => $alt->altitudeUnits,
-    )
-  );
-
-  /** @todo Temporal Coverage */
-
   return $eml;
 }
 
