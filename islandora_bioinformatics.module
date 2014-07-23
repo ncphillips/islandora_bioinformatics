@@ -122,7 +122,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
     array('islandora:person_cmodel',       'Person',       "$module_path/xml/cmodels/person_dscm.xml",        '', array(
         array(FEDORA_RELS_EXT_URI, 'isMemberOf',    'islandora:project_cmodel', FALSE), ), ),
     // Genesequence
-    array('islandora:genesequence_cmodel', 'Genesequence', "$module_path/xml/cmodels/geneseqence_dscm.xml",  'islandora:lab_object_cmodel', array(
+    array('islandora:genesequence_cmodel', 'Genesequence', "$module_path/xml/cmodels/genesequence_dscm.xml",  'islandora:lab_object_cmodel', array(
         array(FEDORA_RELS_EXT_URI, 'isMetadatFor',    'islandora:specimen_cmodel', FALSE), ), ),
     // Fraction
     array('islandora:fraction_cmodel',     'Fraction',     "$module_path/xml/cmodels/fraction_dscm.xml",     'islandora:lab_object_cmodel', array(
