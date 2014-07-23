@@ -20,7 +20,7 @@ function islandora_bioinformatics_islandora_project_cmodel_islandora_view_object
  * Implements hook_CMODEL_PID_islandora_view_object() for the Specimen CModel.
  */
 function islandora_bioinformatics_islandora_specimen_cmodel_islandora_view_object($object, $page_number, $page_size) {
-  $output = theme('islandora_specimen', array('islandora_object' => $object));
+  $output = theme('islandora_bioinformatics_specimen', array('islandora_object' => $object));
   return array('' => $output);
 }
 
