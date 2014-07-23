@@ -1,4 +1,4 @@
 <dsCompositeModel xmlns="info:fedora/fedora-system:def/dsCompositeModel#">
-  <dsTypeModel ID="ABI" optional="true"> <form MIME="application/abi"/> </dsTypeModel>
-  <dsTypeModel ID="FASTA" optional="true"> <form MIME="application/fasta"/> </dsTypeModel>
+  <dsTypeModel ID="ABI"> <form MIME="application/abi"/> </dsTypeModel>
+  <dsTypeModel ID="FASTA"> <form MIME="application/fasta"/> </dsTypeModel>
 </dsCompositeModel>
