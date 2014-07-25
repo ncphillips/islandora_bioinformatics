@@ -5,8 +5,9 @@
  * Handles uploading a FASTA file to an genesequence as part of ingest.
  */
  
-function islandora_bioinformatics_genesequence_upload_fasta_form(array $form, array &$form_state) {
+function upload_genesequence_fasta_form(array $form, array &$form_state) {
 
+  $models = $form_state['islandora']['objects'][0]->models;
   //sets the max upload size
   $upload_size = min((int) ini_get('post_max_size'), (int) ini_get('upload_max_filesize'));
   $extensions = array('fasta', 'fas', 'fna', 'ffn', 'faa', 'frn');
@@ -27,8 +28,14 @@ function islandora_bioinformatics_genesequence_upload_fasta_form(array $form, ar
   return $form;
 }
 
-function islandora_bioinformatics_genesequence_upload_fasta_form_submit(array $form, array &$form_state) {
+function upload_genesequence_fasta_form_submit(array $form, array &$form_state) {
   $object = $form_state['islandora']['objects'][0];
+  $models = $object->models;
+  if(sizeof($models) == 1){
+    $models = array_merge($form_state['islandora']['shared_storage']['models'], $models);
+    $object->models = $models;
+  }
+
   if (empty($object['FASTA'])) {
     $ds = $object->constructDatastream('FASTA', 'M');
     $object->ingestDatastream($ds);
@@ -36,7 +43,7 @@ function islandora_bioinformatics_genesequence_upload_fasta_form_submit(array $f
   else {
     $ds = $object['FASTA'];
   }
-  $fasta_file = file_load($form_state['values']['fasta_file']);
+  $fasta_file = file_load($form_state['values']['file']);
   $fasta_path = drupal_realpath($fasta_file->uri);
   $ds->setContentFromFile($fasta_path, FALSE);
   $ds->label = $fasta_file->filename;

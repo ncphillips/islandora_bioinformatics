@@ -17,7 +17,6 @@ function specimen_EML_to_array($specimen_object) {
   $xml = new SimpleXMLElement($specimen_object["EML"]->content);
   $attributes = is_object($xml->attributes()) ? $xml->attributes() : false;
 
-
   $xml = is_object($xml->dataset) ? $xml->dataset : false;
 
   $eml['abstract'] = $xml ? (string)$xml->abstract->para : '';
@@ -25,6 +24,7 @@ function specimen_EML_to_array($specimen_object) {
   $eml['shortName'] = (string)$xml->shortName;
   $eml['system'] = (string)$attributes['system'];
   $eml['title'] = (string)$xml->title;
+
 
   // Specimen Keywords
   $eml['keywords'] = array();
@@ -59,18 +59,19 @@ function specimen_EML_to_array($specimen_object) {
     )
   );
 
+//  var_dump((is_object($xml->coverage) ? ($coverage = $xml->coverage) : false));
+
   if (is_object($xml->coverage) ? ($coverage = $xml->coverage) : false){
 
-    if (is_object($coverage->taxonomicCoverage))
-      eml_taxonomicCoverage_to_array($coverage->taxonomicCoverage->taxonomicClassification, $eml);
+    eml_taxonomicCoverage_to_array($coverage->taxonomicCoverage->taxonomicClassification, $eml);
 
     // Geographic Coverage
-
     if (is_object($coverage->geographicCoverage))
       eml_geographicCoverage_to_array($coverage->geographicCoverage, $eml);
 
     /** @todo Temporal Coverage */
   }
+
   return $eml;
 }
 
@@ -81,9 +82,9 @@ function specimen_EML_to_array($specimen_object) {
  * @param array $array
  * The array in which to put the results.
  */
-function eml_taxonomicCoverage_to_array(SimpleXMLElement $coverage, array &$array){
-  $classifications = $coverage->taxonomicClassification;
+function eml_taxonomicCoverage_to_array(SimpleXMLElement $classifications, array &$array){
   foreach($classifications as $classification){
+
     $taxonRankName = (string)$classification->taxonRankName;
     switch($taxonRankName){
       case 'Phylum':

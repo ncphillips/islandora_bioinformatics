@@ -3,28 +3,30 @@
  * @file islandora_bioinformatics.module
  */
 error_reporting(E_ALL);
-ini_set('display_errors', TRUE);
-ini_set('display_startup_errors', TRUE);
+ini_set('display_errors',  TRUE);
+ini_set('display_startup_errors',  TRUE);
 
 
 
 // Islandora hook implementations
-module_load_include('inc', 'islandora_bioinformatics', 'includes/hook_view_object');
-module_load_include('inc', 'islandora_bioinformatics', 'includes/hook_ingest_steps');
+module_load_include('inc',  'islandora_bioinformatics',  'includes/hook_view_object');
+module_load_include('inc',  'islandora_bioinformatics',  'includes/hook_ingest_steps');
 
 // Access
-module_load_include('inc', 'islandora_bioinformatics', 'includes/access_callbacks');
+module_load_include('inc',  'islandora_bioinformatics',  'includes/access_callbacks');
 
 // Page Callbacks
-module_load_include('inc', 'islandora_bioinformatics', 'includes/page_callbacks');
+module_load_include('inc',  'islandora_bioinformatics',  'includes/page_callbacks');
 
-// Related Content Form Alters
-module_load_include('inc', 'islandora_bioinformatics', 'includes/alter_related_content_form');
+// Hook Form Alters
+module_load_include('inc',  'islandora_bioinformatics',  'includes/hook_form_alters');
+module_load_include('inc',  'islandora_bioinformatics',  'includes/hook_xml_form_builder_form_associations');
+
 
 /**
  * Implements hook_menu()
  */
-function islandora_bioinformatics_menu(){
+function islandora_bioinformatics_menu() {
   $urls = array();
 
   $urls['islandora/object/%islandora_object/people'] = array(
@@ -32,9 +34,9 @@ function islandora_bioinformatics_menu(){
     'type' => MENU_LOCAL_TASK,
     'description' => 'People assigned to this project.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_related_content_form', 2, 'islandora:person_cmodel'),
+    'page arguments' => array('islandora_related_content_form',  2,  'islandora:person_cmodel'),
     'access callback' => 'islandora_related_people_access',
-    'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS), 2),
+    'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS),  2),
   );
 
   return $urls;
@@ -43,27 +45,27 @@ function islandora_bioinformatics_menu(){
 /**
  * Implements hook_theme()
  */
-function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
+function islandora_bioinformatics_theme($existing,  $type,  $theme,  $path) {
   $themes = array();
 
   // Person & Project
   $themes['islandora_bioinformatics_project']    = array(
     'file' => 'theme/theme.inc',
     'template' => 'theme/islandora-bioinformatics-project',
-    'variables' => array('object' => NULL,),
+    'variables' => array('object' => NULL, ),
   );
 
   $themes['islandora_bioinformatics_person']     = array(
     'file' => 'theme/theme.inc',
     'template' => 'theme/islandora-bioinformatics-person',
-    'variables' => array('object' => NULL,),
+    'variables' => array('object' => NULL, ),
   );
 
   // Lab Object
   $themes['islandora_bioinformatics_lab_object'] = array(
     'file' => 'theme/theme.inc',
     'template' => 'theme/islandora-bioinformatics-lab-object',
-    'variables' => array('object' => NULL,),
+    'variables' => array('object' => NULL, ),
   );
 
   // Specimen
@@ -103,71 +105,71 @@ function islandora_bioinformatics_theme($existing, $type, $theme, $path) {
  * Implements hook_islandora_required_objects()
  */
 function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $connection) {
-  $module_path = drupal_get_path('module', 'islandora_bioinformatics');
+  $module_path = drupal_get_path('module',  'islandora_bioinformatics');
 
   $objects = array();
 
   // CModels Info
   $cmodels = array(
     // Lab Object
-    array('islandora:lab_object_cmodel',    'Lab Object',   "$module_path/xml/cmodels/lab_object_dscm.xml",   '', array(),),
+    array('islandora:lab_object_cmodel',     'Lab Object',    "$module_path/xml/cmodels/lab_object_dscm.xml",    '',  array(), ),
     // Specimen
-    array('islandora:specimen_cmodel',      'Specimen',     '',                                               'islandora:lab_object_cmodel', array(
-        array(FEDORA_RELS_EXT_URI, 'isMemberOf',    'islandora:project_cmodel', FALSE), ) ),
+    array('islandora:specimen_cmodel',       'Specimen',      '',                                                'islandora:lab_object_cmodel',  array(
+        array(FEDORA_RELS_EXT_URI,  'isMemberOf',     'islandora:project_cmodel',  FALSE),  ) ),
     // Microbe/Invertebrate
-    array('islandora:microbe_cmodel',      'Microbe',      '',                                                'islandora:specimen_cmodel', array()),
-    array('islandora:invertebrate_cmodel', 'Invertebrate', '',                                                'islandora:specimen_cmodel', array()),
+    array('islandora:microbe_cmodel',       'Microbe',       '',                                                 'islandora:specimen_cmodel',  array()),
+    array('islandora:invertebrate_cmodel',  'Invertebrate',  '',                                                 'islandora:specimen_cmodel',  array()),
     // Project
-    array('islandora:project_cmodel',      'Project',      "$module_path/xml/cmodels/project_dscm.xml",       '', array()),
-    array('islandora:person_cmodel',       'Person',       "$module_path/xml/cmodels/person_dscm.xml",        '', array(
-        array(FEDORA_RELS_EXT_URI, 'isMemberOf',    'islandora:project_cmodel', FALSE), ), ),
+    array('islandora:project_cmodel',       'Project',       "$module_path/xml/cmodels/project_dscm.xml",        '',  array()),
+    array('islandora:person_cmodel',        'Person',        "$module_path/xml/cmodels/person_dscm.xml",         '',  array(
+        array(FEDORA_RELS_EXT_URI,  'isMemberOf',     'islandora:project_cmodel',  FALSE),  ),  ),
     // Genesequence
-    array('islandora:genesequence_cmodel', 'Genesequence', "$module_path/xml/cmodels/genesequence_dscm.xml",  'islandora:lab_object_cmodel', array(
-        array(FEDORA_RELS_EXT_URI, 'isMetadatFor',    'islandora:specimen_cmodel', FALSE), ), ),
+    array('islandora:genesequence_cmodel',  'Genesequence',  "$module_path/xml/cmodels/genesequence_dscm.xml",   'islandora:lab_object_cmodel',  array(
+        array(FEDORA_RELS_EXT_URI,  'isMetadatFor',     'islandora:microbe_cmodel',  FALSE),  ),  ),
     // Fraction
-    array('islandora:fraction_cmodel',     'Fraction',     "$module_path/xml/cmodels/fraction_dscm.xml",     'islandora:lab_object_cmodel', array(
-        array(FEDORA_RELS_EXT_URI, 'isMetadataFor',    'islandora:specimen_cmodel', FALSE), ), ),
+    array('islandora:fraction_cmodel',      'Fraction',      "$module_path/xml/cmodels/fraction_dscm.xml",      'islandora:lab_object_cmodel',  array(
+        array(FEDORA_RELS_EXT_URI,  'isMetadataFor',     'islandora:specimen_cmodel',  FALSE),  ),  ),
     // LCMS
-    array('islandora:lcms_cmodel',         'LCMS',         "$module_path/xml/cmodels/lcms_dscm.xml",         'islandora:lab_object_cmodel', array(
-        array(FEDORA_RELS_EXT_URI, 'isMetadataFor',    'islandora:fraction_cmodel', FALSE),
+    array('islandora:lcms_cmodel',          'LCMS',          "$module_path/xml/cmodels/lcms_dscm.xml",          'islandora:lab_object_cmodel',  array(
+        array(FEDORA_RELS_EXT_URI,  'isMetadataFor',     'islandora:fraction_cmodel',  FALSE),
       )
     ),
   );
 
- foreach($cmodels as $cma){
-   $cmodel = islandora_cmodel_create($cma[0], $cma[1], $cma[2], $cma[3]);
-   foreach($cma[4] as $rel_arg){
-     $cmodel->relationships->add($rel_arg[0], $rel_arg[1], $rel_arg[2], $rel_arg[3]);
+ foreach($cmodels as $cma) {
+   $cmodel = islandora_cmodel_create($cma[0],  $cma[1],  $cma[2],  $cma[3]);
+   foreach($cma[4] as $rel_arg) {
+     $cmodel->relationships->add($rel_arg[0],  $rel_arg[1],  $rel_arg[2],  $rel_arg[3]);
    }
    $objects[] = $cmodel;
  }
 
   // Collections Info
   $collections = array(
-    'person_collection'       => array('parent' => 'islandora:root',                  'label' => 'People Collection'),
-    'project_collection'      => array('parent' => 'islandora:root',                  'label' => 'Project Collection'),
-    'lab_object_collection'   => array('parent' => 'islandora:root',                  'label' => 'Lab Objects Collection'),
-    'specimen_collection'     => array('parent' => 'islandora:lab_object_collection', 'label' => 'Specimen Collection'),
-    'microbe_collection'      => array('parent' => 'islandora:specimen_collection',   'label' => 'Microbe Collection'),
-    'invertebrate_collection' => array('parent' => 'islandora:specimen_collection',   'label' => 'Invertebrate Collection'),
-    'genesequence_collection' => array('parent' => 'islandora:lab_object_collection', 'label' => 'Genesequence Collection'),
-    'fraction_collection'     => array('parent' => 'islandora:lab_object_collection', 'label' => 'Fraction Collection'),
-    'lcms_collection'         => array('parent' => 'islandora:lab_object_collection', 'label' => 'LCMS Collection'),
+    'person_collection'       => array('parent' => 'islandora:root',                   'label' => 'People Collection'),
+    'project_collection'      => array('parent' => 'islandora:root',                   'label' => 'Project Collection'),
+    'lab_object_collection'   => array('parent' => 'islandora:root',                   'label' => 'Lab Objects Collection'),
+    'specimen_collection'     => array('parent' => 'islandora:lab_object_collection',  'label' => 'Specimen Collection'),
+    'microbe_collection'      => array('parent' => 'islandora:specimen_collection',    'label' => 'Microbe Collection'),
+    'invertebrate_collection' => array('parent' => 'islandora:specimen_collection',    'label' => 'Invertebrate Collection'),
+    'genesequence_collection' => array('parent' => 'islandora:lab_object_collection',  'label' => 'Genesequence Collection'),
+    'fraction_collection'     => array('parent' => 'islandora:lab_object_collection',  'label' => 'Fraction Collection'),
+    'lcms_collection'         => array('parent' => 'islandora:lab_object_collection',  'label' => 'LCMS Collection'),
   );
 
   // Create Objects
-  foreach($collections as $pid => $details){
+  foreach($collections as $pid => $details) {
     // Construct the Fedora Object.
     $collection = $connection->repository->constructObject('islandora:' . $pid);
     $collection->owner = 'fedoraAdmin';
     $collection->label = $details['label'];
     $collection->models = 'islandora:collectionCModel';
-    $collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $details['parent']);
+    $collection->relationships->add(FEDORA_RELS_EXT_URI,  'isMemberOfCollection',  $details['parent']);
 
     // Create the COLLECTION_POLICY datastream
-    $collection_policy = $collection->constructDatastream ('COLLECTION_POLICY', 'X');
+    $collection_policy = $collection->constructDatastream ('COLLECTION_POLICY',  'X');
     $collection_policy->mimetype = 'text/xml';
-    $collection_policy->setContentFromFile("$module_path/xml/collections/{$pid}_policy.xml", FALSE);
+    $collection_policy->setContentFromFile("$module_path/xml/collections/{$pid}_policy.xml",  FALSE);
 
     // Ingest the datastream
     $collection->ingestDatastream($collection_policy);
@@ -189,7 +191,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
  * Implements hook_islandora_xml_form_builder_forms()
  */
 function islandora_bioinformatics_islandora_xml_form_builder_forms() {
-  $module_path = drupal_get_path('module', 'islandora_bioinformatics');
+  $module_path = drupal_get_path('module',  'islandora_bioinformatics');
 
   // Person Forms
   $fb_forms = array(
@@ -213,10 +215,10 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
 //      'form_file' => "$module_path/xml/forms/invertebrate_form.xml"
 //    ),
     'Fraction Form' => array(
-      'form_file' => "$module_path/xml/forms/fraction_eml_form.xml"
+      'form_file' => "$module_path/xml/forms/fraction_form.xml"
     ),
     'Compound Form' => array(
-      'form_file' => "$module_path/xml/forms/compound_eml_form.xml"
+      'form_file' => "$module_path/xml/forms/compound_form.xml"
     ),
 
     'LCMS Form' => array(
@@ -227,91 +229,6 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
   return $fb_forms;
 }
 
-/**
- * Implements hook_islandora_xml_form_builder_form_associations()
- */
-function islandora_bioinformatics_islandora_xml_form_builder_form_associations() {
-  $form_associations = array(
-    // Person MADS
-    'person_mads' => array(
-      'content_model' => 'islandora:person_cmodel',
-      'form_name' => 'Person MADS Form',
-      'dsid' => 'MADS',
-      'title_field' => array('authority', 'titleInfo', 'title'),
-      'transform' => 'No Transform',
-      'template' => '',
-    ),
-
-    // Project MADS
-    'project_mads' => array(
-      'content_model' => 'islandora:project_cmodel',
-      'form_name' => 'Project MADS Form',
-      'dsid' => 'MADS',
-      'title_field' => array('authority', 'titleInfo', 'title'),
-      'transform' => 'No Transform',
-      'template' => '',
-    ),
-
-    // Associate each type of specimen to the generic Specimen EML Form.
-    'specimen_eml' => array(
-      'content_model' => "islandora:specimen_cmodel",
-      'form_name' => "Specimen EML Form",
-      'dsid' => 'EML',
-      'title_field' => array('lab_identifier'),
-      'transform' => '',
-      'template' => FALSE,
-    ),
-
-    /** @todo Somehow inherit parent forms so these associations wouldn't be necessary. */
-
-    'invertebrate_specimen_eml' => array(
-      'content_model' => "islandora:invertebrate_cmodel",
-      'form_name' => "Specimen EML Form",
-      'dsid' => 'EML',
-      'title_field' => array('lab_identifier'),
-      'transform' => '',
-      'template' => FALSE,
-    ),
-    'microbe_specimen_eml' => array(
-      'content_model' => "islandora:microbe_cmodel",
-      'form_name' => "Specimen EML Form",
-      'dsid' => 'EML',
-      'title_field' => array('lab_identifier'),
-      'transform' => '',
-      'template' => FALSE,
-    ),
-
-    // Fraction and Compound
-    'fraction_form' => array(
-      'content_model' => "islandora:fraction_cmodel",
-      'form_name' => 'Fraction Form',
-      'dsid' => 'fraction',
-      'transform' => '',
-      'template' => FALSE,
-      'title_field' => array('id'),
-    ),
-    'compound_form' => array(
-      'content_model' => "islandora:fraction_cmodel",
-      'form_name' => 'Compound Form',
-      'dsid' => 'fraction',
-      'transform' => '',
-      'template' => FALSE,
-      'title_field' => array('id'),
-    ),
-
-    // LCMS
-    'lcms_form' => array(
-      'content_model' => 'islandora:lcms_cm',
-      'form_name' => 'LCMS Form',
-      'dsid' => 'LCMS',
-      'title_field' => array('run_title'),
-      'transform' => '',
-      'template' => FALSE,
-    ),
-  );
-
-  return $form_associations;
-}
 
 
 
@@ -326,11 +243,11 @@ function islandora_bioinformatics_islandora_xml_form_builder_form_associations()
  * Altering the Related Content page for Project's to exclude relationships
  * towards the Person CModel.
  */
-function islandora_bioinformatics_islandora_islandora_project_cmodel_related_objects_page_alter(&$page, &$page_state){
+function islandora_bioinformatics_islandora_islandora_project_cmodel_related_objects_page_alter(&$page,  &$page_state) {
   $count = 0;
 
   // Find and iterate through all relationships.
-  foreach($page_state['relationships'] as $rel){
+  foreach($page_state['relationships'] as $rel) {
     // Remove relationships if the object is a person.
     if($rel['object']['value'] == 'islandora:person_cmodel') {
       unset($page_state['relationships'][$count]);
@@ -340,97 +257,6 @@ function islandora_bioinformatics_islandora_islandora_project_cmodel_related_obj
 }
 
 
-
-/**
- * Implements hook_form_FORM_ID_alter()
- *
- * WHERE  FORM_ID         = "islandora_related_RELATED_CMODEL_objects_form"
- * AND    RELATED_CMODEL  = "islandora:person_cmodel"
- */
-function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel_objects_form_alter(&$form, &$form_state) {
-  module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
-
-  $object = $form_state['islandora']['object_id'] ? $form_state['islandora']['object_id'] : null;
-  $people = $form_state['islandora']['related_objects_ids'] ? $form_state['islandora']['related_objects_ids'] : array();
-
-  $header = array(
-    'name' => t('Name'),
-    'phone' => t('Phone Number'),
-    'email' => t('Email'),
-  );
-
-  $form['cmodel']['#markup'] = 'People';
-
-  $form['ingest'] = array();
-
-  $people_entries = array();
-
-  foreach ($people as $person) {
-    // Default Values
-    if (!isset($person['MADS'])) break;
-
-    $person_mads = person_mads_to_array($person);
-    $person_id = $person->id;
-
-    $name = $person_mads['name']['first'] . ' ' . $person_mads['name']['last'];
-
-    $people_entries[$person_id] = array(
-      'name' => l($name, "islandora/object/$person_id"),
-      'phone' => $person_mads['contact']['phone'],
-      'email' => $person_mads['contact']['email'],
-    );
-  }
-
-  $form['table']['#header'] = $header;
-  $form['table']['#options'] = $people_entries;
-  $form['table']['#empty'] = t('There is no people related to ' . $object->id . '.');
-
-  return $form;
-}
-
-
-/**
- * @param $string
- */
-function _sponge_class_autocomplete($string) {
-  $matches = array();
-
-  $result = db_select('labobject_sponge_class', 'c')
-    ->fields('c', array('class'))
-    ->condition('class', '%' . db_like($string) . '%', 'LIKE')
-    ->execute();
-  // save the query to matches
-  foreach ($result as $row) {
-    $matches[$row->class] = check_plain($row->class);
-  }
-
-  drupal_json_output($matches);
-}
-
-/**
- * @author Brent Mitton
- * @param $string
- * Takes in part of a string that is currently being typed into a textbox
- * and then does a mysql LIKE query. For autocompletion on fraction forms
- */
-function _assay_autocomplete($string) {
-  $matches = array();
-
-  $or = db_or()
-    ->condition('abbreviation', '%' . db_like($string) . '%', 'LIKE')
-    ->condition('name', '%' . db_like($string) . '%', 'LIKE');
-
-  $result = db_select('labobject_assay_assay', 'a')
-    ->fields('a', array('abbreviation', 'name'))
-    ->condition($or)
-    ->execute();
-  // save the query to matches
-  foreach ($result as $row) {
-    $matches[$row->name] = check_plain($row->abbreviation) . " - " . check_plain($row->name) ;
-  }
-
-  drupal_json_output($matches);
-}
 
 
 

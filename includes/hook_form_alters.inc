@@ -50,3 +50,51 @@ function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmod
 
   return $form;
 }
+
+
+/**
+ * Implements hook_form_FORM_ID_alter()
+ *
+ * WHERE  FORM_ID         = "islandora_related_RELATED_CMODEL_objects_form"
+ * AND    RELATED_CMODEL  = "islandora:person_cmodel"
+ */
+function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel_objects_form_alter(&$form, &$form_state) {
+  module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
+
+  $object = $form_state['islandora']['object_id'] ? $form_state['islandora']['object_id'] : null;
+  $people = $form_state['islandora']['related_objects_ids'] ? $form_state['islandora']['related_objects_ids'] : array();
+
+  $header = array(
+    'name' => t('Name'),
+    'phone' => t('Phone Number'),
+    'email' => t('Email'),
+  );
+
+  $form['cmodel']['#markup'] = 'People';
+
+  $form['ingest'] = array();
+
+  $people_entries = array();
+
+  foreach ($people as $person) {
+    // Default Values
+    if (!isset($person['MADS'])) break;
+
+    $person_mads = person_mads_to_array($person);
+    $person_id = $person->id;
+
+    $name = $person_mads['name']['first'] . ' ' . $person_mads['name']['last'];
+
+    $people_entries[$person_id] = array(
+      'name' => l($name, "islandora/object/$person_id"),
+      'phone' => $person_mads['contact']['phone'],
+      'email' => $person_mads['contact']['email'],
+    );
+  }
+
+  $form['table']['#header'] = $header;
+  $form['table']['#options'] = $people_entries;
+  $form['table']['#empty'] = t('There is no people related to ' . $object->id . '.');
+
+  return $form;
+}

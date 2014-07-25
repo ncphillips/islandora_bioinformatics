@@ -76,14 +76,14 @@ function islandora_bioinformatics_islandora_specimen_cmodel_islandora_ingest_ste
   );
 }
 
-function islandora_bioinformatics_genesequence_islandora_genesequence_cmodel_islandora_ingest_steps(array $configuration) {
+function islandora_bioinformatics_islandora_genesequence_cmodel_islandora_ingest_steps(array $configuration) {
   return array(
     'islandora_bioinformatics_genesequence_fasta_file_upload' => array(
       'weight' => 8,
       'type' => 'form',
-      'form_id' => 'islandora_bioinformatics_genesequence_upload_fasta_form',
-      'module' => 'islandora_bioinformatics_genesequence',
-      'file' => 'includes/islandora_bioinformatics_genesequence_upload_fasta.form.inc'
+      'form_id' => 'upload_genesequence_fasta_form',
+      'module' => 'islandora_bioinformatics',
+      'file' => 'forms/upload_fasta.form.inc'
     ),
   );
 }

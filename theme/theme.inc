@@ -85,7 +85,6 @@ function islandora_bioinformatics_preprocess_islandora_bioinformatics_specimen(a
   $variables['related_projects'] = $related_projects;
 
   $variables['object_id'] = $islandora_object->id;
-  echo "hi";
 }
 
 // here's where you can change the $variables array before the page is loaded
