@@ -64,15 +64,14 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
   $object = $form_state['islandora']['object_id'] ? $form_state['islandora']['object_id'] : null;
   $people = $form_state['islandora']['related_objects_ids'] ? $form_state['islandora']['related_objects_ids'] : array();
 
-  $header = array(
-    'name' => t('Name'),
-    'phone' => t('Phone Number'),
-    'email' => t('Email'),
+
+  unset($form['ingest_link']);
+
+  $form['content_table_select']['table']['#header'] = array(
+    'name' => 'Name',
+    'phone' => 'Phone',
+    'email' => 'Email',
   );
-
-  $form['cmodel']['#markup'] = 'People';
-
-  $form['ingest'] = array();
 
   $people_entries = array();
 
@@ -92,9 +91,8 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
     );
   }
 
-  $form['table']['#header'] = $header;
-  $form['table']['#options'] = $people_entries;
-  $form['table']['#empty'] = t('There is no people related to ' . $object->id . '.');
+  $form['content_table_select']['table']['#options'] = $people_entries;
+  $form['content_table_select']['table']['#empty'] = t('There is no people related to ' . $object->label . '.');
 
   return $form;
 }
