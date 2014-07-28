@@ -84,7 +84,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
     $mads = person_mads_to_array($person);
 
     $name = $mads['authority']['given'] . ' ' . $mads['authority']['family'];
-    $label = $name ? $name : ($mads['title'] ? $mads['title']: ($mads['id']? $mads['id']: $person_id));
+    $label = $mads['title'] ? $mads['title']: ($name ? $name : ($mads['id']? $mads['id']: $person_id));
 
     $people_entries[$person_id] = array(
       'name' => l($label, "islandora/object/$person_id"),
