@@ -201,55 +201,37 @@ function person_mads_to_array($person_object) {
    *
    * Takes in an islandora person object and returns a simple array of the MADS data
    */
+
+
   $ns = "http://www.loc.gov/mads/v2";
+  $xml = (new SimpleXMLElement($person_object["MADS"]->content))->children($ns);
 
-  $person_mads = array();
+  $name = $xml->authority->name;
+  $affiliation = $xml->affiliation;
 
-  $person_xml = new SimpleXMLElement($person_object["MADS"]->content);
+  $mads = array(
+    'authority' => array(
+      'given' => is_object($name) ? (string)$name->namePart[0]: '',
+      'family' => is_object($name)? (string)$name->namePart[1]: '',
+      'birth_date' => is_object($name) ? (string)$name->namePart[2]: '',
+    ),
+    'title' => is_object($xml->authority->titleInfo) ? (string)$xml->authority->titleInfo->title : '',
+    'id' => (string)$xml->identifier,
+    'affiliation' => array(
+      'phone' => is_object($affiliation) ? (string)$affiliation->phone : '',
+      'email' => is_object($affiliation) ? (string)$affiliation->email : '',
+      'organization' => is_object($affiliation) ? (string)$affiliation->organization : '',
+      'position' => is_object($affiliation) ? (string)$affiliation->position : '',
+      'address' => is_object($affiliation) ? (string)$affiliation->address : '',
+      'start_date' => is_object($affiliation) ? (string)$affiliation->dateValid[0] : '',
+      'end_date' => is_object($affiliation) ? (string)$affiliation->dateValid[1] : '',
+    ),
+    'url' => (string)$xml->url,
+    'note' => array(),
+    'fieldOfActivity' => array(),
+  );
 
-  foreach ($person_xml->children($ns) as $part) {
-    switch ((string) $part->getName()) {
-      case "authority":
-        // I'm just going to rely on position for now. Which is pretty awful
-        $person_mads["name"]["first"] = ($part->name->namePart[0]) ? (string)$part->name->namePart[0] : "" ;
-        $person_mads["name"]["last"] = ($part->name->namePart[1]) ? (string)$part->name->namePart[1] : "" ;
-        $person_mads["name"]["birthdate"] = ($part->name->namePart[2]) ? (string)$part->name->namePart[2] : "" ;
-        $person_mads["title"] = ($part->titleInfo->title) ? (string)$part->titleInfo->title : "";
-        break;
-      case "identifier":
-        // I dont know if this is even working
-        break;
-      case "affiliation":
-        if (!isset($person_mads['contact'])){
-
-          $person_mads['contact']['phone'] = ($part->phone) ? (string)$part->phone : "";
-          $person_mads['contact']['email'] = ($part->email) ? (string)$part->email : "";
-          $person_mads['contact']['organization'] = ($part->organization) ? (string)$part->organization : "";
-          $person_mads['contact']['position'] = ($part->position) ? (string)$part->position : "";
-          $person_mads['contact']['address'] = ($part->address) ? (string)$part->address : "";
-          $person_mads['contact']['startDate'] = ($part->dateValid[0]) ? (string)$part->dateValid[0] : "";
-          $person_mads['contact']['endDate'] = ($part->dateValid[1]) ? (string)$part->dateValid[1] : "";
-
-        }
-        break;
-      case "url":
-        if (!isset($person_mads['contact']['url'])){
-
-          $person_mads['contact']['url'] = ($part) ? (string)$part : "";
-        }
-        break;
-      case "note":
-        // I want to figure out how we want to deal with this before I do it
-        break;
-      case "fieldOfActivity":
-        // What is this?
-        break;
-      default:
-        throw new Exception("Unexpected XML Field.");
-        break;
-    }
-  }
-  return $person_mads;
+  return $mads;
 }
 
 function project_mads_to_array($project_object) {
