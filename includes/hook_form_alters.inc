@@ -61,8 +61,8 @@ function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmod
 function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel_objects_form_alter(&$form, &$form_state) {
   module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
-  $object = $form_state['islandora']['object_id'] ? $form_state['islandora']['object_id'] : null;
-  $people = $form_state['islandora']['related_objects_ids'] ? $form_state['islandora']['related_objects_ids'] : array();
+  $object = !empty($form_state['islandora']['object_id']) ? $form_state['islandora']['object_id'] : null;
+  $people = !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
 
 
   unset($form['ingest_link']);
@@ -75,12 +75,13 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
 
   $people_entries = array();
 
-  foreach ($people as $person) {
+  foreach ($people as $person_id) {
+    $person = islandora_object_load($person_id);
     // Default Values
     if (!isset($person['MADS'])) break;
 
+    module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
     $person_mads = person_mads_to_array($person);
-    $person_id = $person->id;
 
     $name = $person_mads['name']['first'] . ' ' . $person_mads['name']['last'];
 
