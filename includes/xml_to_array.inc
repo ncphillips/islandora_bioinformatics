@@ -194,15 +194,6 @@ function fraction_object_to_array($fraction_object) {
 
 
 function person_mads_to_array($person_object) {
-  /**
-   * @author Brent Mitton
-   * @param $person_object
-   * @return An array with person information
-   *
-   * Takes in an islandora person object and returns a simple array of the MADS data
-   */
-
-
   $ns = "http://www.loc.gov/mads/v2";
   $xml = (new SimpleXMLElement($person_object["MADS"]->content))->children($ns);
 

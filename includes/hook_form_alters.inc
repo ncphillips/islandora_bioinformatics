@@ -81,14 +81,15 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
     if (!isset($person['MADS'])) break;
 
     module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
-    $person_mads = person_mads_to_array($person);
+    $mads = person_mads_to_array($person);
 
-    $name = $person_mads['name']['first'] . ' ' . $person_mads['name']['last'];
+    $name = $mads['authority']['given'] . ' ' . $mads['authority']['family'];
+    $label = $name ? $name : ($mads['title'] ? $mads['title']: ($mads['id']? $mads['id']: $person_id));
 
     $people_entries[$person_id] = array(
-      'name' => l($name, "islandora/object/$person_id"),
-      'phone' => $person_mads['contact']['phone'],
-      'email' => $person_mads['contact']['email'],
+      'name' => l($label, "islandora/object/$person_id"),
+      'phone' => $mads['affiliation']['phone'],
+      'email' => $mads['affiliation']['email'],
     );
   }
 
