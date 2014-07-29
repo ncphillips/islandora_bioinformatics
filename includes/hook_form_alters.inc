@@ -66,6 +66,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
 
 
   unset($form['ingest_link']);
+  $form['add_link']['#markup'] = l('Add Person', "islandora/object/{$object->id}/people/add");
 
   $form['content_table_select']['table']['#header'] = array(
     'name' => 'Name',

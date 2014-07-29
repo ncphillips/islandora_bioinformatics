@@ -29,6 +29,8 @@ module_load_include('inc',  'islandora_bioinformatics',  'includes/hook_xml_form
 function islandora_bioinformatics_menu() {
   $urls = array();
 
+  $rcm_path = drupal_get_path('module', 'islandora_related_content');
+
   $urls['islandora/object/%islandora_object/people'] = array(
     'title' => 'People',
     'type' => MENU_LOCAL_TASK,
@@ -38,6 +40,18 @@ function islandora_bioinformatics_menu() {
     'access callback' => 'islandora_related_people_access',
     'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS),  2),
   );
+
+  $urls['islandora/object/%islandora_object/people/add'] = array(
+    'title' => 'Add Person',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('add_relationship_form', 2, 'islandora:person_cmodel'),
+    'access callback' => 'islandora_object_access',
+    'access arguments' => array(ISLANDORA_METADATA_EDIT, 2),
+    'file' => 'forms/add_relationship.form.inc',
+    'file path' => $rcm_path,
+  );
+
 
   return $urls;
 }
