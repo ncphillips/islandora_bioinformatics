@@ -34,7 +34,7 @@ function islandora_bioinformatics_menu() {
     'type' => MENU_LOCAL_TASK,
     'description' => 'People assigned to this project.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_related_content_form',  2,  'islandora:person_cmodel'),
+    'page arguments' => array('islandora_related_content_form',  2,  'islandora:person_cmodel', array('fedora' => array('isMemberOf',))),
     'access callback' => 'islandora_related_people_access',
     'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS),  2),
   );
