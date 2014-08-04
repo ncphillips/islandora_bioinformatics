@@ -182,7 +182,6 @@ function fraction_object_to_array($fraction_object) {
             $fraction_array["fraction"][$key]["name"] = $value;
             $fraction_array["fraction"][$key]["result"] = ((string)$part->result) ? (string)$part->result:"";
             $fraction_array["fraction"][$key]["comment"] = ((string)$part->comment) ? (string)$part->comment:"";
-
           }
         }
         break;
@@ -193,9 +192,16 @@ function fraction_object_to_array($fraction_object) {
 }
 
 
-function person_mads_to_array($person_object) {
+/**
+ * @param $person
+ * @return array
+ *
+ * This function creates an array with information from the MADS datastream from
+ * a Person object.
+ */
+function person_mads_to_array($person) {
   $ns = "http://www.loc.gov/mads/v2";
-  $xml = (new SimpleXMLElement($person_object["MADS"]->content))->children($ns);
+  $xml = (new SimpleXMLElement($person["MADS"]->content))->children($ns);
 
   $name = $xml->authority->name;
   $affiliation = $xml->affiliation;
@@ -225,50 +231,87 @@ function person_mads_to_array($person_object) {
   return $mads;
 }
 
-function project_mads_to_array($project_object) {
-  /**
-   * @author Brent Mitton
-   * @param $project_object
-   *  An islandora object for the project
-   * @return array
-   *  an array of information needed pertaining to the projcet
-   *
-   * Takes a project object and returns a simple array of the data in the MADS stream.
-   * I'm not sure what data we need from this right now.
-   */
+/**
+ * @param $project
+ * @return array
+ *
+ * This function creates an array with information from the MADS datastream from
+ * a Project object.
+ */
+function project_mads_to_array($project) {
   $ns = "http://www.loc.gov/mads/v2";
 
-  $project_xml = new SimpleXMLElement($project_object["MADS"]->content);
+  if (!is_object($project))
+    $project = islandora_object_load($project);
 
-  $project_mads = array();
+  $xml = (new SimpleXMLElement($project['MADS']->content))->children($ns);
 
-  foreach ($project_xml->children($ns) as $part) {
+  // Here is the full array with default values.
+  $mads = array(
+    'authority' => array(
+      'title_info' => array(
+        'title' => '',
+      ),
+      'identifier' => '',
+    ),
+    'affiliation' => array(
+      'organization' => '',
+      'address' => array(
+        'city' => '',
+        'street' => '',
+        'country' => '',
+        'postcode' => '',
+      ),
+      'email' => '',
+      'phone' => '',
+      'date_valid' => array(
+        'start_date' => '',
+        'end_date' => '',
+      ),
+      'url' => ''
+    ),
+    'note' => array(
+      'status' => '',
+    ),
+    'field_of_activity' => '',
+  );
 
-    switch ((string) $part->getName()) {
-      case "authority":
-        $project_mads["title"] = ((string)$part->titleInfo->title) ? (string)$part->titleInfo->title:"";
-        break;
-      case "affiliation":
-        $project_mads["organization"] = ((string)$part->organization) ? (string)$part->organization:"";
+  if(is_object($xml)){
+    // Title
+    $authority = $xml->authority;
+    if (is_object($authority)){
+      $mads['authority']['title_info']['title'] = (string)$authority->titleInfo->title;
+      $mads['authority']['identifier'] = (string)$authority->identifier;
+    }
 
-        $project_mads["address"]["city"] = ((string)$part->address->city) ? (string)$part->address->city:"";
-        $project_mads["address"]["street"] = ((string)$part->address->street) ? (string)$part->address->street:"";
-        $project_mads["address"]["country"] = ((string)$part->address->country) ? (string)$part->address->country:"";
-        $project_mads["address"]["postcode"] = ((string)$part->address->postcode) ? (string)$part->address->postcode:"";
+    $affiliation = $xml->affiliation;
+    if (is_object($affiliation)){
 
-        $project_mads["email"] = ((string)$part->email) ? (string)$part->email:"";
-        $project_mads["phone"] = ((string)$part->phone) ? (string)$part->phone:"";
+      // Contact Info
+      $mads['affiliation']['organization'] = (string)$affiliation->organization;
+      $mads['affiliation']['email'] = (string)$affiliation->email;
+      $mads['affiliation']['phone'] = (string)$affiliation->phone;
+      $mads['affiliation']['url'] = (string)$affiliation->url;
 
-        $project_mads["startdate"] = ((string) $part->dateValid[0]) ? (string)$part->dateValid[0]:"";
-        $project_mads["enddate"] = ((string) $part->dateValid[1]) ? (string)$part->dateValid[1]:"";
+      // Address
+      $address = $affiliation->address;
+      if (is_object($address)){
+        $mads['affiliation']['address'] = array(
+          'city' => (string)$address->city,
+          'street' => (string)$address->street,
+          'country' => (string)$address->country,
+          'postcode' => (string)$address->postcode,
+        );
+      }
 
-        break;
-      case "note":
-        // add these in when needed
-        break;
-      case "fieldOfActivity":
-        break;
-    };
+      // Date Valid
+      $date = $affiliation->dateValid;
+      if (is_object($date)){
+        $mads['affiliation']['date_valid']['start_date'] = (string)$date[0];
+        $mads['affiliation']['date_valid']['end_date'] = (string)$date[1];
+      }
+    }
   }
-  return $project_mads;
+
+  return $mads;
 }

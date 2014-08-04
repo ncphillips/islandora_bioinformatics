@@ -37,6 +37,7 @@ function islandora_bioinformatics_preprocess_islandora_bioinformatics_project(ar
   module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
 
   $islandora_object = $variables['islandora_object'];
+
   // Thumbnail.
   if (isset($islandora_object['IMG'])) {
     $thumbnail_size_url = url("islandora/object/{$islandora_object->id}/datastream/IMG/view");
@@ -48,8 +49,12 @@ function islandora_bioinformatics_preprocess_islandora_bioinformatics_project(ar
     $variables['img_url'] = $thumbnail_size_url;
   }
 
-  $variables["project"] = project_mads_to_array($islandora_object);
+  $variables['mads'] = project_mads_to_array($islandora_object);
 }
+
+
+
+
 
 /**
  * The preprocess hook. It is responsible for putting anything that the template

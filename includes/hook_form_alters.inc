@@ -61,12 +61,8 @@ function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmod
 function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel_objects_form_alter(&$form, &$form_state) {
   module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
-  $object = !empty($form_state['islandora']['object_id']) ? $form_state['islandora']['object_id'] : null;
+  $object = !empty($form_state['islandora']['object']) ? $form_state['islandora']['object'] : null;
   $people = !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
-
-
-  unset($form['ingest_link']);
-  $form['add_link']['#markup'] = l('Add Person', "islandora/object/{$object->id}/people/add");
 
   $form['content_table_select']['table']['#header'] = array(
     'name' => 'Name',

@@ -41,20 +41,9 @@ function islandora_bioinformatics_menu() {
     'access arguments' => array(array(ISLANDORA_VIEW_OBJECTS),  2),
   );
 
-  $urls['islandora/object/%islandora_object/people/add'] = array(
-    'title' => 'Add Person',
-    'type' => MENU_CALLBACK,
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('add_relationship_form', 2, 'islandora:person_cmodel'),
-    'access callback' => 'islandora_object_access',
-    'access arguments' => array(ISLANDORA_METADATA_EDIT, 2),
-    'file' => 'forms/add_relationship.form.inc',
-    'file path' => $rcm_path,
-  );
-
-
   return $urls;
 }
+
 
 /**
  * Implements hook_theme()
