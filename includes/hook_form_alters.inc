@@ -130,26 +130,39 @@ function islandora_bioinformatics_form_islandora_related_islandora_genesequence_
 
 function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmodel_objects_form_alter(&$form, &$form_state) {
   $object = !empty($form_state['islandora']['object']) ? $form_state['islandora']['object'] : null;
-  $sequences= !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
+  $fractions = !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
   
-  $form['content_table_select']['table']['#header'] = array(
-    'label' => 'Sequence',
-    'download' => '',
-  );
 
-  foreach($sequences as $seq_id){
-    $seq = islandora_object_load($seq_id);
-    $label = $seq->label ? $seq->label: $seq_id;
-    $seq_entries[$seq_id] = array(
-      'label' => l($label, "islandora/object/$seq_id"),
-      'download' => l('Download', "islandora/object/{$seq_id}/datastream/FASTA/download"),
+  $vnames = taxonomy_vocabulary_get_names();
+  $vocab = $vnames['assays'];
+  $vid = $vocab->vid;
+  $terms = taxonomy_get_tree($vid);
+
+  $content_headers = array('label' => 'Label');
+  $assays = array();
+  foreach ($terms as $term){
+    $short_name = $term->name;
+    $long_name = $term->description;
+    $assays[$short_name] = $long_name;
+    $content_headers[$short_name] = $short_name;
+  }
+
+  $form['content_table_select']['table']['#header'] = $content_headers;
+
+  $fraction_entries = array();
+  foreach($fractions as $fraction_id){
+    $fraction = islandora_object_load($fraction_id);
+    $label = $fraction->label ? $fraction->label: $fraction;
+    $assay_results = 
+    $fraction_entries[$fraction_id] = array(
+      'label' => l($label, "islandora/object/$fraction_id"),
     );
   }
 
   
   $empty_message = ($form_state['islandora']['current_form'] == 'View') ?
-                   "There are no Genesequences associated with this object." :
-                   "No Geneequences found.";
+                   "There are no Fractions associated with this object." :
+                   "No Fractions found.";
 
   $form['content_table_select']['table']['#options'] = $seq_entries;
   $form['content_table_select']['table']['#empty'] = $empty_message;

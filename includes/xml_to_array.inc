@@ -315,3 +315,20 @@ function project_mads_to_array($project) {
 
   return $mads;
 }
+
+
+function fraction_to_xml($fraction_id){
+  $fraction = islandora_load_object($fraction_id);
+
+  $xml = new SimpleXMLElement($specimen_object["FRACTION"]->content);
+
+  $array = array();
+
+  echo '<pre>';
+  if(is_object($xml)) {
+    var_dump($xml);
+  }
+  echo '<pre>';
+
+
+}
