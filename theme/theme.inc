@@ -101,7 +101,9 @@ function islandora_bioinformatics_preprocess_islandora_bioinformatics_fraction(a
 
   $ns = "http://www.upeikerrlab.ca";
 
-  $obj = new SimpleXMLElement($islandora_object['fraction']->content);
+  $ds = empty($islandora_object['FRACTION']) ? $islandora_object['fraction'] : $islandora_object['FRACTION'];
+
+  $obj = new SimpleXMLElement($ds->content);
 
   $xml_objects = $obj->children($ns);
 
