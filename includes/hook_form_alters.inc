@@ -61,6 +61,8 @@ function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmod
 function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel_objects_form_alter(&$form, &$form_state) {
   module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
+  unset($form['Ingest']);
+
   $object = !empty($form_state['islandora']['object']) ? $form_state['islandora']['object'] : null;
   $people = !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
 
@@ -94,4 +96,62 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
   $form['content_table_select']['table']['#empty'] = t('There is no people related to ' . $object->label . '.');
 
   return $form;
+}
+
+
+function islandora_bioinformatics_form_islandora_related_islandora_genesequence_cmodel_objects_form_alter(&$form, &$form_state) {
+  $object = !empty($form_state['islandora']['object']) ? $form_state['islandora']['object'] : null;
+  $sequences= !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
+  
+  $form['content_table_select']['table']['#header'] = array(
+    'label' => 'Sequence',
+    'download' => '',
+  );
+
+  foreach($sequences as $seq_id){
+    $seq = islandora_object_load($seq_id);
+    $label = $seq->label ? $seq->label: $seq_id;
+    $seq_entries[$seq_id] = array(
+      'label' => l($label, "islandora/object/$seq_id"),
+      'download' => l('Download', "islandora/object/{$seq_id}/datastream/FASTA/download"),
+    );
+  }
+
+  
+  $empty_message = ($form_state['islandora']['current_form'] == 'View') ?
+                   "There are no Genesequences associated with this object." :
+                   "No Geneequences found.";
+
+  $form['content_table_select']['table']['#options'] = $seq_entries;
+  $form['content_table_select']['table']['#empty'] = $empty_message;
+
+}
+
+
+function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmodel_objects_form_alter(&$form, &$form_state) {
+  $object = !empty($form_state['islandora']['object']) ? $form_state['islandora']['object'] : null;
+  $sequences= !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
+  
+  $form['content_table_select']['table']['#header'] = array(
+    'label' => 'Sequence',
+    'download' => '',
+  );
+
+  foreach($sequences as $seq_id){
+    $seq = islandora_object_load($seq_id);
+    $label = $seq->label ? $seq->label: $seq_id;
+    $seq_entries[$seq_id] = array(
+      'label' => l($label, "islandora/object/$seq_id"),
+      'download' => l('Download', "islandora/object/{$seq_id}/datastream/FASTA/download"),
+    );
+  }
+
+  
+  $empty_message = ($form_state['islandora']['current_form'] == 'View') ?
+                   "There are no Genesequences associated with this object." :
+                   "No Geneequences found.";
+
+  $form['content_table_select']['table']['#options'] = $seq_entries;
+  $form['content_table_select']['table']['#empty'] = $empty_message;
+
 }
