@@ -221,7 +221,7 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
       'form_file' => "$module_path/xml/forms/fraction_form.xml"
     ),
     'Compound Form' => array(
-      'form_file' => "$module_path/xml/forms/compound_form.xml"
+      'form_file' => "$module_path/xml/forms/fraction_form.xml"
     ),
 
     'LCMS Form' => array(
