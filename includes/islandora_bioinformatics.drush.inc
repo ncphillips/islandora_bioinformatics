@@ -25,13 +25,29 @@ function islandora_bioinformatics_drush_command() {
 //drush hook
 function drush_islandora_bioinformatics_fix() {
   $qp = new IslandoraSolrQueryProcessor();
-  $query = 'RELS_EXT_hasModel_uri_ms:"info:fedora/islandora:specimenCModel" OR RELS_EXT_hasModel_uri_ms:"islandora:specimenCModel"';
+  $query = 'PID:vre\:mnpl-specimen-Key*';
+  drush_print("Query: \"$query\"");
   $qp->buildAndExecuteQuery($query);
 
-  $sr = $qp->islandoraSolrResult;
+  $per_page = $qp->solrLimit;
+  drush_print("Matches per Page: $per_page");
 
-  $i = 0;
+  $num_found = $qp->islandoraSolrResult['response']['numFound'];
+  drush_print("Matches: $num_found");
 
-  drush_print("Hello");
+  $num_pages = $num_found / $per_page;
+  drush_print("Pages: $num_pages");
+
+
+  for ($i = 0; $i < $num_pages; $i++){
+    $objects =  $qp->islandoraSolrResult['response']['objects'];
+
+    foreach($objects as $id){
+      $id = [$i];
+    }
+    drush_print("$i: $id");
+    $_GET['page'] = ++$i;
+    $qp->buildAndExecuteQuery($query);
+  }
 }
 

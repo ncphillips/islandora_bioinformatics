@@ -164,7 +164,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmod
                    "There are no Fractions associated with this object." :
                    "No Fractions found.";
 
-  $form['content_table_select']['table']['#options'] = $seq_entries;
+  $form['content_table_select']['table']['#options'] = $fraction_entries;
   $form['content_table_select']['table']['#empty'] = $empty_message;
 
 }
