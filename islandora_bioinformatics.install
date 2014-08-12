@@ -13,7 +13,9 @@ function islandora_bioinformatics_install() {
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   islandora_install_solution_pack('islandora_bioinformatics');
 
-  if(!taxonomy_vocabulary_machine_name_load('assay')){
+  $vocab = taxonomy_vocabulary_machine_name_load('assays');
+
+  if(!$vocab){
     $assay_vocab = (object) array(
       'name' => 'Assays',
       'descriptions' => 'Assays used by the Marine Natural Products Lab',
@@ -21,32 +23,30 @@ function islandora_bioinformatics_install() {
     );
 
     taxonomy_vocabulary_save($assay_vocab);
-    $vocab = taxonomy_vocabulary_machine_name_load('my_custom_vocab');
-    $vid = $vocab->vid;
+    $vocab = taxonomy_vocabulary_machine_name_load('assays');
+  }
 
-    $terms = array(
-      (object) array('name'=> 'CA', 'description' => 'Candida Albicans', 'vid' => $vid),
-      (object) array('name'=> 'EF', 'description' => 'Enterococcus faecalis', 'vid' => $vid),
-      (object) array('name'=> 'HC', 'description' => 'HCT116', 'vid' => $vid),
-      (object) array('name'=> 'HE', 'description' => 'HELA', 'vid' => $vid),
-      (object) array('name'=> 'LO', 'description' => 'Lypoxygenase', 'vid' => $vid),
-      (object) array('name'=> 'MD', 'description' => 'Mycobacterium diernhoferi', 'vid' => $vid),
-      (object) array('name'=> 'ME', 'description' => 'Mycobacterium smegmatis', 'vid' => $vid),
-      (object) array('name'=> 'MF', 'description' => 'Mycobacterium terrae', 'vid' => $vid),
-      (object) array('name'=> 'MRSA', 'description' => 'MRSA', 'vid' => $vid),
-      (object) array('name'=> 'P1B' , 'description' => 'PTB1B', 'vid' => $vid),
-      (object) array('name'=> 'PA' , 'description' => 'Pseudomonas aeruginosa', 'vid' => $vid),
-      (object) array('name'=> 'PC' , 'description' => 'PC3', 'vid' => $vid),
-      (object) array('name'=> 'SA' , 'description' => 'Staphlococcus aureus', 'vid' => $vid),
-      (object) array('name'=> 'VRE' , 'description' => 'VRE', 'vid' => $vid),
-    );
+  $vid = $vocab->vid;
 
-    foreach($terms as $term){
-      if (!taxonomy_get_term_by_name($term->name, 'assays')){
-        taxonomy_term_save($term);
-      }
-    }
+  $terms = array(
+     array('name'=> 'CA', 'description' => 'Candida Albicans', 'vid' => $vid),
+     array('name'=> 'EF', 'description' => 'Enterococcus faecalis', 'vid' => $vid),
+     array('name'=> 'HC', 'description' => 'HCT116', 'vid' => $vid),
+     array('name'=> 'HE', 'description' => 'HELA', 'vid' => $vid),
+     array('name'=> 'LO', 'description' => 'Lypoxygenase', 'vid' => $vid),
+     array('name'=> 'MD', 'description' => 'Mycobacterium diernhoferi', 'vid' => $vid),
+     array('name'=> 'ME', 'description' => 'Mycobacterium smegmatis', 'vid' => $vid),
+     array('name'=> 'MF', 'description' => 'Mycobacterium terrae', 'vid' => $vid),
+     array('name'=> 'MRSA', 'description' => 'MRSA', 'vid' => $vid),
+     array('name'=> 'P1B' , 'description' => 'PTB1B', 'vid' => $vid),
+     array('name'=> 'PA' , 'description' => 'Pseudomonas aeruginosa', 'vid' => $vid),
+     array('name'=> 'PC' , 'description' => 'PC3', 'vid' => $vid),
+     array('name'=> 'SA' , 'description' => 'Staphlococcus aureus', 'vid' => $vid),
+     array('name'=> 'VRE' , 'description' => 'VRE', 'vid' => $vid),
+  );
 
+  foreach($terms as $term){
+      taxonomy_term_save((object)$term);
   }
 }
 
