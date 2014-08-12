@@ -42,8 +42,9 @@ function islandora_bioinformatics_install() {
     );
 
     foreach($terms as $term){
-      if (taxonomy_get_term_by_name($term->name, 'assays'))
-      taxonomy_term_save($term);
+      if (!taxonomy_get_term_by_name($term->name, 'assays')){
+        taxonomy_term_save($term);
+      }
     }
 
   }
