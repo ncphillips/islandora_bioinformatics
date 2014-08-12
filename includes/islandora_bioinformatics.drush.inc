@@ -13,19 +13,9 @@
 function islandora_bioinformatics_drush_command() {
   $items = array();
 
-  $items['islandora_bioinformatics'] = array(
-    'description' => "deletes all objects in a collection.  Please use with caution as purged objects are unrecoverable!
-      You will have to use the drush -u switch or you may not have permission to purge some objects.
-        Currently relies on the Drupal6 version of Islandora.",
-    'arguments' => array(
-      'collection_pid' => 'The pid of the collection object',
-      'relationship' => 'The relationship the objects have to the collection object.  For example isMemberOf is a common relationship.',
-      'interactive' => 'if TRUE then you will be asked to confirm the purge action for each object'
-    ),
-    'examples' => array(
-      'drush islandora_bioinformatics islandora:collection isMemberOfCollection',
-    ),
-    'aliases' => array('islandorapp'),
+  $items['islandora_bioinformatics-fix'] = array(
+    'description' => "Fixes the CModel's for the MNPL Fedora Repository.",
+    'aliases' => array('bio-fix'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN, // we can pass in users id on the command line using drush -u.
   );
 
@@ -33,51 +23,15 @@ function islandora_bioinformatics_drush_command() {
 }
 
 //drush hook
-function drush_islandora_bioinformatics($collection_pid, $relationship, $interactive) {
-  drush_print('Current working directory ' . getcwd());
-  if (isset($collection_pid)) {
-    drush_print("Used collection pid of " . $collection_pid . "\n");
-  }
-  else {
-    drush_print("no collection pid specified");
-    return;
-  }
-  if (isset($relationship)) {
-    drush_print(" and relationship of " . $relationship);
-  }
-  else {
-    drush_print(" no relationship specified");
-    return;
-  }
-  islandora_bioinformatics_doAction($collection_pid, $relationship, $interactive);
+function drush_islandora_bioinformatics_fix() {
+  $qp = new IslandoraSolrQueryProcessor();
+  $query = 'RELS_EXT_hasModel_uri_ms:"info:fedora/islandora:specimenCModel" OR RELS_EXT_hasModel_uri_ms:"islandora:specimenCModel"';
+  $qp->buildAndExecuteQuery($query);
+
+  $sr = $qp->islandoraSolrResult;
+
+  $i = 0;
+
+  drush_print("Hello");
 }
 
-//just a function
-function islandora_bioinformatics_doAction($collection_pid, $relationship, $interactive) {
-  module_load_include('inc', 'fedora_repository', 'api/fedora_collection');
-  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
-  $objects = get_related_items_as_array($collection_pid, $relationship);
-  foreach ($objects as $object) {
-    drush_print($object);
-  }
-  //drush_print("are you sure you want to delete ".count($objects)." objects");
-  $num = count($objects);
-  if (!drush_confirm(dt('are you sure you want to delete @num objects?', array('@num' => $num)))) {
-    // was: return drush_set_error('CORE_SYNC_ABORT', 'Aborting.');
-    drush_die('Aborting.');
-  }
-  if ($interactive == 'TRUE') {
-    foreach ($objects as $object) {
-      if (drush_confirm(dt('purge @pid ?', array('@pid' => $object)))) {
-        $item = new Fedora_Item($object);
-        $item->purge('purged using islandorapp drush script');
-      }
-    }
-  }
-  else {
-    foreach ($objects as $object) {
-      $item = new Fedora_Item($object);
-      $item->purge('purged using islandorapp drush script no confirm');
-    }
-  }
-}
