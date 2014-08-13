@@ -42,11 +42,18 @@ function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmod
     $rows['label'] = $specimen_url;
     $rows['genus_species'] = $genus_species;
     $rows['#attributes'] = array("style" => "max-height: 100px;");
+
+    $c = islandora_cmodel_load(islandora_object_parent_model($specimen_id));
+    $rows['cmodel'] = $c->label;
   }
 
   $form['content_table_select']['table']['#type'] =  'tableselect';
   $form['content_table_select']['table']['#header'] =  $header;
-  $form['content_table_select']['table']['#empty'] =  t("There are no related specimens.");
+  if($form_state['islandora']['current_form'] == 'View')
+    $form['content_table_select']['table']['#empty'] =  t("There are no related specimens.");
+  elseif ($form_state['islandora']['current_form'] == 'Add') {
+    $form['content_table_select']['table']['#empty'] =  t("The search found no specimen.");
+  }
 
   return $form;
 }
@@ -129,10 +136,12 @@ function islandora_bioinformatics_form_islandora_related_islandora_genesequence_
 
 
 function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmodel_objects_form_alter(&$form, &$form_state) {
+  unset($form['View']);
+  unset($form['Add']);
   $object = !empty($form_state['islandora']['object']) ? $form_state['islandora']['object'] : null;
   $fractions = !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
-  
 
+  // Get the Assays vocabulary and all it's terms.
   $vnames = taxonomy_vocabulary_get_names();
   $vocab = $vnames['assays'];
   $vid = $vocab->vid;
@@ -140,30 +149,54 @@ function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmod
 
   $content_headers = array('label' => 'Label');
   $assays = array();
+
   foreach ($terms as $term){
+    // Short and Long Names
     $short_name = $term->name;
     $long_name = $term->description;
+
+    // Associative Array of Assays
     $assays[$short_name] = $long_name;
+
+    // Table Header
     $content_headers[$short_name] = $short_name;
+
+    // Default value for all cells. Using this structure so we can apply classes.
+    $default_cells[$short_name] = array('data' => 'N');
   }
 
-  $form['content_table_select']['table']['#header'] = $content_headers;
+  module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
 
   $fraction_entries = array();
   foreach($fractions as $fraction_id){
     $fraction = islandora_object_load($fraction_id);
     $label = $fraction->label ? $fraction->label: $fraction;
-    $assay_results = 
-    $fraction_entries[$fraction_id] = array(
-      'label' => l($label, "islandora/object/$fraction_id"),
-    );
+
+    $fraction_entries[$fraction_id]= array_merge($default_cells,
+      array('label' => l($label, "islandora/object/$fraction_id")));
+
+    $xml = fraction_to_array($fraction_id);
+    foreach($xml['assays'] as $assay){
+      $short_name = $assay['name'];
+
+      switch($assay['result']){
+        case('inactive'): $result = 'I'; $bgcolor = ''; break;
+        case('low'):      $result = 'L'; $bgcolor = 'grey'; break;
+        case('medium'):   $result = 'M'; $bgcolor = 'orange'; break;
+        case('strong'):   $result = 'S'; $bgcolor = 'yellow'; break;
+        case('hit'):      $result = 'H'; $bgcolor = 'red'; break;
+        default:          $result = '-'; $bgcolor = ''; break;
+      }
+
+      $fraction_entries[$fraction_id][$short_name] = array('data' => $result, 'bgcolor'=>$bgcolor);
+    }
   }
 
-  
   $empty_message = ($form_state['islandora']['current_form'] == 'View') ?
                    "There are no Fractions associated with this object." :
                    "No Fractions found.";
 
+  $form['content_table_select']['table']['#header'] = $content_headers;
   $form['content_table_select']['table']['#options'] = $fraction_entries;
   $form['content_table_select']['table']['#empty'] = $empty_message;
 

@@ -29,6 +29,8 @@ function islandora_bioinformatics_install() {
   $vid = $vocab->vid;
 
   $terms = array(
+    array('name'=> 'AP', 'description' => 'Antiproliferative', 'vid' => $vid),
+    array('name'=> 'ARE', 'description' => 'ARE', 'vid' => $vid),
      array('name'=> 'CA', 'description' => 'Candida Albicans', 'vid' => $vid),
      array('name'=> 'EF', 'description' => 'Enterococcus faecalis', 'vid' => $vid),
      array('name'=> 'HC', 'description' => 'HCT116', 'vid' => $vid),

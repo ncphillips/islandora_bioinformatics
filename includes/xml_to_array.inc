@@ -317,18 +317,46 @@ function project_mads_to_array($project) {
 }
 
 
-function fraction_to_xml($fraction_id){
-  $fraction = islandora_load_object($fraction_id);
+function fraction_to_array($fraction_id){
+  $fraction = islandora_object_load($fraction_id);
 
-  $xml = new SimpleXMLElement($fraction["FRACTION"]->content);
+  $ns = "http://www.upeikerrlab.ca";
+  $ds = empty($fraction['FRACTION']) ? $fraction['fraction'] : $fraction['FRACTION'];
+
+  $obj = new SimpleXMLElement($ds->content);
+  $xml_objects = $obj->children($ns);
 
   $array = array();
+  $array['id'] = $xml_objects->id;
+  $array['lab_id'] = $xml_objects->labid;
+  $array['weight'] = $xml_objects->weight;
+  $array['plate'] = $xml_objects->plate;
+  $array['location'] = $xml_objects->location;
+  $array['notes'] = $xml_objects->notes;
 
-  echo '<pre>';
-  if(is_object($xml)) {
-//    var_dump($xml);
+  $array['assays'] = array();
+  $i = 0;
+  foreach ($xml_objects->inhibitor as $assay) {
+    $array['assays'][$i]['name'] = (string) $assay->name;
+    $array['assays'][$i]['result'] = (string) $assay->result;
+    $array['assays'][$i]['comment'] = $assay->comment;
+    $i++;
   }
-  echo '<pre>';
+
+  return $array;
+}
 
 
+function critter_to_array($specimen_id){
+  $specimen = islandora_object_load($specimen_id);
+
+  $ns = "http://vre.upei.ca/critters/";
+  $ds = $specimen['CRITTER'];
+
+  $obj = new SimpleXMLElement($ds->content);
+  $xml_objects = $obj->children($ns);
+  $array = array(
+    'type' => $xml_objects->type,
+  );
+  return $array;
 }

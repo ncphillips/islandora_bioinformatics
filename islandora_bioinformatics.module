@@ -122,6 +122,10 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
     // Microbe/Invertebrate
     array('islandora:microbe_cmodel',       'Microbe',       '',                                                 'islandora:specimen_cmodel',  array()),
     array('islandora:invertebrate_cmodel',  'Invertebrate',  '',                                                 'islandora:specimen_cmodel',  array()),
+    array('islandora:algae_cmodel',         'Algae',         '',                                                 'islandora:invertebrate_cmodel',  array()),
+    array('islandora:sponge_cmodel',        'Sponge',        '',                                                 'islandora:invertebrate_cmodel',  array()),
+    array('islandora:coral_cmodel',         'Coral',         '',                                                 'islandora:invertebrate_cmodel',  array()),
+    array('islandora:tunicate_cmodel',      'Tunicate',      '',                                                 'islandora:invertebrate_cmodel',  array()),
     // Project
     array('islandora:project_cmodel',       'Project',       "$module_path/xml/cmodels/project_dscm.xml",        '',  array()),
     array('islandora:person_cmodel',        'Person',        "$module_path/xml/cmodels/person_dscm.xml",         '',  array(
@@ -152,12 +156,16 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
     'person_collection'       => array('parent' => 'islandora:root',                   'label' => 'People Collection'),
     'project_collection'      => array('parent' => 'islandora:root',                   'label' => 'Project Collection'),
     'lab_object_collection'   => array('parent' => 'islandora:root',                   'label' => 'Lab Objects Collection'),
-    'specimen_collection'     => array('parent' => 'islandora:lab_object_collection',  'label' => 'Specimen Collection'),
-    'microbe_collection'      => array('parent' => 'islandora:specimen_collection',    'label' => 'Microbe Collection'),
-    'invertebrate_collection' => array('parent' => 'islandora:specimen_collection',    'label' => 'Invertebrate Collection'),
-    'genesequence_collection' => array('parent' => 'islandora:lab_object_collection',  'label' => 'Genesequence Collection'),
-    'fraction_collection'     => array('parent' => 'islandora:lab_object_collection',  'label' => 'Fraction Collection'),
-    'lcms_collection'         => array('parent' => 'islandora:lab_object_collection',  'label' => 'LCMS Collection'),
+      'genesequence_collection' => array('parent' => 'islandora:lab_object_collection',  'label' => 'Genesequence Collection'),
+      'fraction_collection'     => array('parent' => 'islandora:lab_object_collection',  'label' => 'Fraction Collection'),
+      'lcms_collection'         => array('parent' => 'islandora:lab_object_collection',  'label' => 'LCMS Collection'),
+      'specimen_collection'     => array('parent' => 'islandora:lab_object_collection',  'label' => 'Specimen Collection'),
+        'microbe_collection'      => array('parent' => 'islandora:specimen_collection',    'label' => 'Microbe Collection'),
+        'invertebrate_collection' => array('parent' => 'islandora:specimen_collection',    'label' => 'Invertebrate Collection'),
+          'algae_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Algae Collection'),
+          'coral_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Coral Collection'),
+          'sponge_collection'       => array('parent' => 'islandora:invertebrate_collection','label' => 'Sponge Collection'),
+          'tunicate_collection'     => array('parent' => 'islandora:invertebrate_collection','label' => 'Tunicate Collection'),
   );
 
   // Create Objects
