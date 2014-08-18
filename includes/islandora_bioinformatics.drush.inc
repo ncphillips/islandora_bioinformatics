@@ -13,9 +13,9 @@
 function islandora_bioinformatics_drush_command() {
   $items = array();
 
-  $items['islandora_bioinformatics-fix'] = array(
+  $items['islandora_bioinformatics-fix-critter'] = array(
     'description' => "Fixes the CModel's for the MNPL Fedora Repository.",
-    'aliases' => array('bio-fix'),
+    'aliases' => array('biofix-critter'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN, // we can pass in users id on the command line using drush -u.
   );
 
@@ -23,7 +23,7 @@ function islandora_bioinformatics_drush_command() {
 }
 
 //drush hook
-function drush_islandora_bioinformatics_fix() {
+function drush_islandora_bioinformatics_fix_critter() {
 
   module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
   $qp = new IslandoraSolrQueryProcessor();

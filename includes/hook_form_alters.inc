@@ -137,6 +137,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_genesequence_
 
 function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmodel_objects_form_alter(&$form, &$form_state) {
   unset($form['View']);
+  unset($form['Ingest']);
   unset($form['Add']);
   $object = !empty($form_state['islandora']['object']) ? $form_state['islandora']['object'] : null;
   $fractions = !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
@@ -196,8 +197,95 @@ function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmod
                    "There are no Fractions associated with this object." :
                    "No Fractions found.";
 
+//  unset($form['content_table_select']['table']['#type']);
+//  $form['content_table_select']['table']['#theme'] = 'table';
   $form['content_table_select']['table']['#header'] = $content_headers;
   $form['content_table_select']['table']['#options'] = $fraction_entries;
   $form['content_table_select']['table']['#empty'] = $empty_message;
 
+  // Get a list of protocols and put them in this variable.
+  $solr = new IslandoraSolrQueryProcessor();
+  $solr->buildAndExecuteQuery('RELS_EXT_hasModel_uri_ms:"info:fedora/islandora:lab_protocol_cmodel"');
+
+
+  $protocols = array('F-A Protocol'=> 'F-A Protocol');
+  foreach($solr->islandoraSolrResult['response']['objects'] as $sr){
+    $protocols[$sr['PID']] = $sr['PID'];
+  }
+
+
+  if (empty($protocols)){
+    $protocols[] = "None";
+    $form['content_table_select']['actions']['selected']['#disabled'] = TRUE;
+    $form['content_table_select']['actions']['submit']['#disabled'] = TRUE;
+  }
+
+  $form['content_table_select']['actions']['selected']['#options'] = $protocols;
+  $form['content_table_select']['actions']['selected']['#title'] = 'Protocols';
+  $form['content_table_select']['actions']['submit']['#value'] = 'Run Protocol';
+  $form['content_table_select']['actions']['submit']['#submit'][] = 'fa_protocol';
+}
+
+function fa_protocol(&$form, &$form_state){
+  /**@todo Actually do this. */
+  if ($form_state['values']['selected'] == 'F-A Protocol'){
+    $protocol = 'F-A Protocol';
+    for ($i = 0; $i < 4; $i++){
+      $object = $form_state['islandora']['object'];
+      $tuque = new IslandoraTuque();
+      $fraction = $tuque->repository->constructObject();
+      $fraction->label = 'F-' . $i;
+      $fraction->models = array('islandora:fraction_cmodel');
+      $ds = $fraction->constructDatastream('fraction');
+      $ds->setContentFromString('<?xml version="1.0"?>
+                                  <fraction:assay xmlns:fraction="http://www.upeikerrlab.ca" xmlns="http://www.upeikerrlab.ca">
+                                  <fraction:type>fraction</fraction:type>
+                                  <fraction:id>F-'.$i .'</fraction:id>
+                                  <fraction:labid>???</fraction:labid>
+                                  <fraction:weight>???</fraction:weight>
+                                  <fraction:specimen>info:fedora/'. $object->id .'</fraction:specimen>
+                                  <fraction:protocol>' . $protocol .'</fraction:protocol>
+                                  <fraction:notes>NOT FILLED OUT</fraction:notes>
+                                  <fraction:plate/>
+                                  <fraction:location/>
+                                  <fraction:notes/>
+                                  </fraction:assay>');
+      $fraction->ingestDatastream($ds);
+      $tuque->repository->ingestObject($fraction);
+      $fraction = islandora_object_load($fraction->id);
+      $fraction->relationships->add(FEDORA_RELS_EXT_URI, 'isMetadataFor', $object);
+    }
+  }
+
+  else if (islandora_object_load($form_state['values']['selected'])){
+  $ns = "http://www.upeikerrlab.ca";
+  $protocol = islandora_object_load($form_state['values']['selected']);
+  $xml = new SimpleXMLElement($protocol['protocol']->content);
+  $xml_objects = $xml->children($ns);
+  $object = $form_state['islandora']['object'];
+    $tuque = new IslandoraTuque();
+  foreach($xml_objects->step as $step){
+      $fraction = $tuque->repository->constructObject();
+      $fraction->label = $step->step_name;
+      $fraction->models = array('islandora:fraction_cmodel');
+      $ds = $fraction->constructDatastream('fraction');
+      $ds->setContentFromString('<?xml version="1.0"?>
+                                  <fraction:assay xmlns:fraction="http://www.upeikerrlab.ca" xmlns="http://www.upeikerrlab.ca">
+                                  <fraction:type>fraction</fraction:type>
+                                  <fraction:id>' . $fraction->label . '</fraction:id>
+                                  <fraction:labid>???</fraction:labid>
+                                  <fraction:weight>???</fraction:weight>
+                                  <fraction:specimen>info:fedora/'. $object->id .'</fraction:specimen>
+                                  <fraction:protocol>' . $protocol .'</fraction:protocol>
+                                  <fraction:notes>NOT FILLED OUT</fraction:notes>
+                                  <fraction:plate/>
+                                  <fraction:location/>
+                                  <fraction:notes/>
+                                  </fraction:assay>');
+      $fraction->ingestDatastream($ds);
+      $tuque->repository->ingestObject($fraction);
+      $fraction = islandora_object_load($fraction->id);
+      $fraction->relationships->add(FEDORA_RELS_EXT_URI, 'isMetadataFor', $object);
+  }
+  }
 }

@@ -114,6 +114,9 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
 
   // CModels Info
   $cmodels = array(
+    // Lab Protocol
+    array('islandora:lab_protocol_cmodel',     'Lab Protocol',    '',    '',  array(), ),
+    array('islandora:fraction_protocol_cmodel',       'Fractionation Protocol',       '', 'islandora:lab_protocol_cmodel',  array()),
     // Lab Object
     array('islandora:lab_object_cmodel',     'Lab Object',    "$module_path/xml/cmodels/lab_object_dscm.xml",    '',  array(), ),
     // Specimen
@@ -155,9 +158,10 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
   $collections = array(
     'person_collection'       => array('parent' => 'islandora:root',                   'label' => 'People Collection'),
     'project_collection'      => array('parent' => 'islandora:root',                   'label' => 'Project Collection'),
+    'lab_protocol_collection' => array('parent' => 'islandora:root',                   'label' => 'Lab Protocol Collection'),
+      'fraction_protocol_collection'     => array('parent' => 'islandora:lab_protocol_collection',  'label' => 'Fractionation Protocol Collection'),
     'lab_object_collection'   => array('parent' => 'islandora:root',                   'label' => 'Lab Objects Collection'),
       'genesequence_collection' => array('parent' => 'islandora:lab_object_collection',  'label' => 'Genesequence Collection'),
-      'fraction_collection'     => array('parent' => 'islandora:lab_object_collection',  'label' => 'Fraction Collection'),
       'lcms_collection'         => array('parent' => 'islandora:lab_object_collection',  'label' => 'LCMS Collection'),
       'specimen_collection'     => array('parent' => 'islandora:lab_object_collection',  'label' => 'Specimen Collection'),
         'microbe_collection'      => array('parent' => 'islandora:specimen_collection',    'label' => 'Microbe Collection'),
@@ -258,10 +262,10 @@ function islandora_bioinformatics_islandora_islandora_project_cmodel_related_obj
   $count = 0;
 
   // Find and iterate through all relationships.
-  foreach($page_state['relationships'] as $rel) {
+  foreach($page_state['subject_relationships'] as $rel) {
     // Remove relationships if the object is a person.
     if($rel['object']['value'] == 'islandora:person_cmodel') {
-      unset($page_state['relationships'][$count]);
+      unset($page_state['subject_relationships'][$count]);
     }
     $count++;
   }
