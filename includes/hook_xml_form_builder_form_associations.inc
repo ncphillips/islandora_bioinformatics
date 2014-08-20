@@ -58,16 +58,16 @@ function islandora_bioinformatics_islandora_xml_form_builder_form_associations()
 
     // Fraction and Compound
     'fraction_form' => array(
-      'content_model' => "islandora:fraction_cmodel",
-      'form_name' => 'Fraction Form',
+      'content_model' => "islandora:fraction_run_cmodel",
+      'form_name' => 'Assay Run Form',
       'dsid' => 'fraction',
       'transform' => '',
       'template' => FALSE,
       'title_field' => array('id'),
     ),
     'compound_form' => array(
-      'content_model' => "islandora:fraction_cmodel",
-      'form_name' => 'Compound Form',
+      'content_model' => "islandora:compound_run_cmodel",
+      'form_name' => 'Assay Run Form',
       'dsid' => 'fraction',
       'transform' => '',
       'template' => FALSE,

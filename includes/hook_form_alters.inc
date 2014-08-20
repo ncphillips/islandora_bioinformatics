@@ -135,12 +135,12 @@ function islandora_bioinformatics_form_islandora_related_islandora_genesequence_
 }
 
 
-function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmodel_objects_form_alter(&$form, &$form_state) {
+function islandora_bioinformatics_form_islandora_related_islandora_assay_run_cmodel_objects_form_alter(&$form, &$form_state) {
   unset($form['View']);
   unset($form['Ingest']);
   unset($form['Add']);
   $object = !empty($form_state['islandora']['object']) ? $form_state['islandora']['object'] : null;
-  $fractions = !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
+  $assay_runs = !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
 
   // Get the Assays vocabulary and all it's terms.
   $vnames = taxonomy_vocabulary_get_names();
@@ -168,15 +168,15 @@ function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmod
 
   module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
 
-  $fraction_entries = array();
-  foreach($fractions as $fraction_id){
-    $fraction = islandora_object_load($fraction_id);
-    $label = $fraction->label ? $fraction->label: $fraction;
+  $assay_run_entries = array();
+  foreach($assay_runs as $assay_run_id){
+    $assay_run = islandora_object_load($assay_run_id);
+    $label = $assay_run->label ? $assay_run->label: $assay_run;
 
-    $fraction_entries[$fraction_id]= array_merge($default_cells,
-      array('label' => l($label, "islandora/object/$fraction_id")));
+    $assay_run_entries[$assay_run_id]= array_merge($default_cells,
+      array('label' => l($label, "islandora/object/$assay_run_id")));
 
-    $xml = fraction_to_array($fraction_id);
+    $xml = fraction_to_array($assay_run_id);
     foreach($xml['assays'] as $assay){
       $short_name = $assay['name'];
 
@@ -189,7 +189,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmod
         default:          $result = '-'; $bgcolor = ''; break;
       }
 
-      $fraction_entries[$fraction_id][$short_name] = array('data' => $result, 'bgcolor'=>$bgcolor);
+      $assay_run_entries[$assay_run_id][$short_name] = array('data' => $result, 'bgcolor'=>$bgcolor);
     }
   }
 
@@ -200,7 +200,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_fraction_cmod
 //  unset($form['content_table_select']['table']['#type']);
 //  $form['content_table_select']['table']['#theme'] = 'table';
   $form['content_table_select']['table']['#header'] = $content_headers;
-  $form['content_table_select']['table']['#options'] = $fraction_entries;
+  $form['content_table_select']['table']['#options'] = $assay_run_entries;
   $form['content_table_select']['table']['#empty'] = $empty_message;
 
   // Get a list of protocols and put them in this variable.

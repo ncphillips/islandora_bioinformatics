@@ -28,9 +28,9 @@ function islandora_bioinformatics_islandora_specimen_cmodel_islandora_view_objec
 /**
  * Implements hook_CMODEL_PID_islandora_view_object() for the Fraction CModel.
  */
-function islandora_bioinformatics_islandora_fraction_cmodel_islandora_view_object($object, $page_number, $page_size) {
-  $output = theme('islandora_bioinformatics_fraction', array('islandora_object' => $object));
-  return array('islandora_bioinformatics_fraction' => $output);
+function islandora_bioinformatics_islandora_assay_run_cmodel_islandora_view_object($object, $page_number, $page_size) {
+  $output = theme('islandora_bioinformatics_assay_run', array('islandora_object' => $object));
+  return array('islandora_bioinformatics_assay_run' => $output);
 }
 
 /**

@@ -112,64 +112,115 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
 
   $objects = array();
 
-  // CModels Info
-  $cmodels = array(
-    // Lab Protocol
-    array('islandora:lab_protocol_cmodel',     'Lab Protocol',    '',    '',  array(), ),
-    array('islandora:fraction_protocol_cmodel',       'Fractionation Protocol',       '', 'islandora:lab_protocol_cmodel',  array()),
-    // Lab Object
-    array('islandora:lab_object_cmodel',     'Lab Object',    "$module_path/xml/cmodels/lab_object_dscm.xml",    '',  array(), ),
-    // Specimen
-    array('islandora:specimen_cmodel',       'Specimen',      '',                                                'islandora:lab_object_cmodel',  array(
-        array(FEDORA_RELS_EXT_URI,  'isMemberOf',     'islandora:project_cmodel',  FALSE),  ) ),
-    // Microbe/Invertebrate
-    array('islandora:microbe_cmodel',       'Microbe',       '',                                                 'islandora:specimen_cmodel',  array()),
-    array('islandora:invertebrate_cmodel',  'Invertebrate',  '',                                                 'islandora:specimen_cmodel',  array()),
-    array('islandora:algae_cmodel',         'Algae',         '',                                                 'islandora:invertebrate_cmodel',  array()),
-    array('islandora:sponge_cmodel',        'Sponge',        '',                                                 'islandora:invertebrate_cmodel',  array()),
-    array('islandora:coral_cmodel',         'Coral',         '',                                                 'islandora:invertebrate_cmodel',  array()),
-    array('islandora:tunicate_cmodel',      'Tunicate',      '',                                                 'islandora:invertebrate_cmodel',  array()),
-    // Project
-    array('islandora:project_cmodel',       'Project',       "$module_path/xml/cmodels/project_dscm.xml",        '',  array()),
-    array('islandora:person_cmodel',        'Person',        "$module_path/xml/cmodels/person_dscm.xml",         '',  array(
-        array(FEDORA_RELS_EXT_URI,  'isMemberOf',     'islandora:project_cmodel',  FALSE),  ),  ),
-    // Genesequence
-    array('islandora:genesequence_cmodel',  'Genesequence',  "$module_path/xml/cmodels/genesequence_dscm.xml",   'islandora:lab_object_cmodel',  array(
-        array(FEDORA_RELS_EXT_URI,  'isMetadatFor',     'islandora:microbe_cmodel',  FALSE),  ),  ),
-    // Fraction
-    array('islandora:fraction_cmodel',      'Fraction',      "$module_path/xml/cmodels/fraction_dscm.xml",      'islandora:lab_object_cmodel',  array(
-        array(FEDORA_RELS_EXT_URI,  'isMetadataFor',     'islandora:specimen_cmodel',  FALSE),  ),  ),
-    // LCMS
-    array('islandora:lcms_cmodel',          'LCMS',          "$module_path/xml/cmodels/lcms_dscm.xml",          'islandora:lab_object_cmodel',  array(
-        array(FEDORA_RELS_EXT_URI,  'isMetadataFor',     'islandora:fraction_cmodel',  FALSE),
+  $cm = array();
+
+  // Person
+  $cm['Person'] = array(
+    '#dscm' => true,
+    '#relationships' => array(
+      FEDORA_RELS_EXT_URI => array(
+        'isMemberOf' => array(
+          'islandora:project_cmodel',
+        ),
       )
     ),
   );
+  // Project
+  $cm['Project'] = array(
+    '#dscm' => true,
+  );
+  // Specimen
+  $cm['Specimen'] = array(
+    '#dscm' => true,
+    '#relationships' => array(
+      FEDORA_RELS_EXT_URI => array(
+        'isMemberOf' => array(
+          'islandora:project_cmodel',
+        ),
+      ),
+    ),
+  );
+  // Microbe
+  $cm['Microbe'] = array(
+    '#parent' => 'islandora:specimen_cmodel',
+    '#relationships' => array(
+    ),
+  );
+  // Invertebrate
+  $cm['Invertebrate'] = $cm['Microbe'];
+  // Assay Runs
+  $cm['Assay Run'] = array(
+    '#dscm' => true,
+  );
+  $cm['Fraction Run'] = array(
+    '#parent' => 'islandora:assay_run_cmodel',
+    '#relationships' => array(
+      FEDORA_RELS_EXT_URI => array(
+        'isMetadataFor' => array(
+          'islandora:specimen_cmodel',
+        ),
+      ),
+    ),
+  );
+  $cm['Compound Run'] = $cm['Fraction Run'];
+  $cm['LCMS'] = array(
+    '#relationships' => array(
+      FEDORA_RELS_EXT_URI => array(
+        'isMetadataFor' => array(
+          'islandora:assay_run',
+        ),
+      ),
+    )
+  );
 
- foreach($cmodels as $cma) {
-   $cmodel = islandora_cmodel_create($cma[0],  $cma[1],  $cma[2],  $cma[3]);
-   foreach($cma[4] as $rel_arg) {
-     $cmodel->relationships->add($rel_arg[0],  $rel_arg[1],  $rel_arg[2],  $rel_arg[3]);
-   }
-   $objects[] = $cmodel;
- }
+  // Genesequence
+  $cm['Genesequence'] = $cm['Assay Run'];
+
+  foreach($cm as $label => $a){
+    $safe = strtolower(str_replace(' ', '_', $label));
+    $cmid = 'islandora:'.$safe.'_cmodel';
+
+    $parent = '';
+    if(in_array('#parent', array_keys($a))){
+      $parent = $a['#parent'];
+    }
+
+    if (!empty($a['#dscm']) and $a['#dscm']){
+      $dscm_path = $module_path . '/xml/cmodels/' .$safe. '_dscm.xml';
+    }
+    else {
+      $dscm_path = '';
+    }
+
+    $object = islandora_cmodel_create($cmid, $label, $dscm_path, $parent);
+    if(!empty($a['#relationships'])){
+      foreach($a['#relationships'] as $ns => $rels){
+        foreach($rels as $rel => $targets){
+          foreach($targets as $target){
+            $object->relationships->add($ns, $rel, $target);
+          }
+        }
+      }
+    }
+    $objects[] = $object;
+
+  }
 
   // Collections Info
   $collections = array(
     'person_collection'       => array('parent' => 'islandora:root',                   'label' => 'People Collection'),
     'project_collection'      => array('parent' => 'islandora:root',                   'label' => 'Project Collection'),
     'lab_protocol_collection' => array('parent' => 'islandora:root',                   'label' => 'Lab Protocol Collection'),
-      'fraction_protocol_collection'     => array('parent' => 'islandora:lab_protocol_collection',  'label' => 'Fractionation Protocol Collection'),
-    'lab_object_collection'   => array('parent' => 'islandora:root',                   'label' => 'Lab Objects Collection'),
-      'genesequence_collection' => array('parent' => 'islandora:lab_object_collection',  'label' => 'Genesequence Collection'),
-      'lcms_collection'         => array('parent' => 'islandora:lab_object_collection',  'label' => 'LCMS Collection'),
-      'specimen_collection'     => array('parent' => 'islandora:lab_object_collection',  'label' => 'Specimen Collection'),
-        'microbe_collection'      => array('parent' => 'islandora:specimen_collection',    'label' => 'Microbe Collection'),
-        'invertebrate_collection' => array('parent' => 'islandora:specimen_collection',    'label' => 'Invertebrate Collection'),
-          'algae_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Algae Collection'),
-          'coral_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Coral Collection'),
-          'sponge_collection'       => array('parent' => 'islandora:invertebrate_collection','label' => 'Sponge Collection'),
-          'tunicate_collection'     => array('parent' => 'islandora:invertebrate_collection','label' => 'Tunicate Collection'),
+//    'lab_object_collection'   => array('parent' => 'islandora:root',                   'label' => 'Lab Objects Collection'),
+    'genesequence_collection' => array('parent' => 'islandora:root',  'label' => 'Genesequence Collection'),
+    'lcms_collection'         => array('parent' => 'islandora:root',  'label' => 'LCMS Collection'),
+    'specimen_collection'     => array('parent' => 'islandora:root',  'label' => 'Specimen Collection'),
+      'microbe_collection'      => array('parent' => 'islandora:specimen_collection',    'label' => 'Microbe Collection'),
+      'invertebrate_collection' => array('parent' => 'islandora:specimen_collection',    'label' => 'Invertebrate Collection'),
+//          'algae_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Algae Collection'),
+//          'coral_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Coral Collection'),
+//          'sponge_collection'       => array('parent' => 'islandora:invertebrate_collection','label' => 'Sponge Collection'),
+//          'tunicate_collection'     => array('parent' => 'islandora:invertebrate_collection','label' => 'Tunicate Collection'),
   );
 
   // Create Objects
@@ -190,7 +241,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
     $collection->ingestDatastream($collection_policy);
 
     // Add collection to the list of objects.
-    $objects[] = $collection;
+//    $objects[] = $collection;
   }
 
   return array(
@@ -229,11 +280,11 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
 //    'Invertebrate EML Form' => array(
 //      'form_file' => "$module_path/xml/forms/invertebrate_form.xml"
 //    ),
-    'Fraction Form' => array(
-      'form_file' => "$module_path/xml/forms/fraction_form.xml"
+    'Assay Run Form' => array(
+      'form_file' => "$module_path/xml/forms/assay_run_form.xml"
     ),
-    'Compound Form' => array(
-      'form_file' => "$module_path/xml/forms/fraction_form.xml"
+    'Assay Run Form' => array(
+      'form_file' => "$module_path/xml/forms/assay_run_form.xml"
     ),
 
     'LCMS Form' => array(

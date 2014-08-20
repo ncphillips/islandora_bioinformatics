@@ -93,7 +93,7 @@ function islandora_bioinformatics_preprocess_islandora_bioinformatics_specimen(a
 }
 
 // here's where you can change the $variables array before the page is loaded
-function islandora_bioinformatics_preprocess_islandora_bioinformatics_fraction(array &$variables) {
+function islandora_bioinformatics_preprocess_islandora_bioinformatics_assay_run(array &$variables) {
 
   $islandora_object = $variables['islandora_object'];
 
