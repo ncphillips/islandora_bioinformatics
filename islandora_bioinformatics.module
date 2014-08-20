@@ -167,14 +167,22 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
     '#relationships' => array(
       FEDORA_RELS_EXT_URI => array(
         'isMetadataFor' => array(
-          'islandora:assay_run',
+          'islandora:assay_run_cmodel',
         ),
       ),
     )
   );
 
   // Genesequence
-  $cm['Genesequence'] = $cm['Assay Run'];
+  $cm['Genesequence'] = array(
+    '#relationships' => array(
+      FEDORA_RELS_EXT_URI => array(
+        'isMetadataFor' => array(
+          'islandora:microbe_cmodel',
+        ),
+      ),
+    )
+  );
 
   foreach($cm as $label => $a){
     $safe = strtolower(str_replace(' ', '_', $label));
@@ -294,9 +302,6 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
 
   return $fb_forms;
 }
-
-
-
 
 
 /**
