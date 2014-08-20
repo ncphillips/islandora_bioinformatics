@@ -280,10 +280,10 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
 //    'Invertebrate EML Form' => array(
 //      'form_file' => "$module_path/xml/forms/invertebrate_form.xml"
 //    ),
-    'Assay Run Form' => array(
+    'Compound Run Form' => array(
       'form_file' => "$module_path/xml/forms/assay_run_form.xml"
     ),
-    'Assay Run Form' => array(
+    'Fraction Run Form' => array(
       'form_file' => "$module_path/xml/forms/assay_run_form.xml"
     ),
 
