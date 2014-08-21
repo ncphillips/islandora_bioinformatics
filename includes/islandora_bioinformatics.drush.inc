@@ -50,33 +50,36 @@ function drush_islandora_bioinformatics_fix_critter_models() {
     $j = $i*$per_page;
     foreach($objects as $o_array){
       $id = $o_array['PID'];
+
+      drush_print($id);
       $object = islandora_object_load($id);
+      if (isset($object['CRITTER'])){
+        $critter = critter_to_array($object);
+        switch ($critter['type']){
+          case('Tunicate'):
+          case('Sponge'):
+          case('Coral'):
+          case('Algae'):
+            $collection = 'islandora:' . strtolower($critter['type']) . '_collection';
+            $cmodel = 'islandora:invertebrate_cmodel';
+            break;
+          default:
+            $cmodel = 'islandora:specimen_cmodel';
+            $collection= 'islandora:specimen_collection';
+            break;
+        }
 
-      $critter = critter_to_array($object);
-      switch ($critter['type']){
-        case('Tunicate'):
-        case('Sponge'):
-        case('Coral'):
-        case('Algae'):
-          $collection = 'islandora:' . strtolower($critter['type']) . '_collection';
-          $cmodel = 'islandora:invertebrate_cmodel';
-          break;
-        default:
-          $cmodel = 'islandora:specimen_cmodel';
-          $collection= 'islandora:specimen_collection';
-          break;
-      }
+        $types = array_merge(islandora_cmodel_types($cmodel), $object->models);
+        $object->models = $types;
 
-      $types = array_merge(islandora_cmodel_types($cmodel), $object->models);
-      $object->models = $types;
-
-      // Creates a hasParentModel relationship towards the CModel initially chosen.
-      $object->relationships->registerNamespace('islandora-model', ISLANDORA_MODEL_URI);
-      if (!$object->relationships->get(ISLANDORA_MODEL_URI, 'hasParentModel', $cmodel)){
-        $object->relationships->add(ISLANDORA_MODEL_URI, 'hasParentModel', $cmodel);
-      }
-      if (!$object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection)){
-        $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection);
+        // Creates a hasParentModel relationship towards the CModel initially chosen.
+        $object->relationships->registerNamespace('islandora-model', ISLANDORA_MODEL_URI);
+        if (!$object->relationships->get(ISLANDORA_MODEL_URI, 'hasParentModel', $cmodel)){
+          $object->relationships->add(ISLANDORA_MODEL_URI, 'hasParentModel', $cmodel);
+        }
+        if (!$object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection)){
+          $object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection);
+        }
       }
 
 //      drush_print("$j: $object");
@@ -87,7 +90,6 @@ function drush_islandora_bioinformatics_fix_critter_models() {
 //      drush_print("\tCollections");
       $j++;
     }
-
   }
 }
 
