@@ -13,9 +13,9 @@
 function islandora_bioinformatics_drush_command() {
   $items = array();
 
-  $items['islandora_bioinformatics-fix-critter'] = array(
+  $items['islandora_bioinformatics-fix-critter-models'] = array(
     'description' => "Fixes the CModel's for the MNPL Fedora Repository.",
-    'aliases' => array('biofix-critter'),
+    'aliases' => array('biofix-critter-models'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN, // we can pass in users id on the command line using drush -u.
   );
 
@@ -23,11 +23,11 @@ function islandora_bioinformatics_drush_command() {
 }
 
 //drush hook
-function drush_islandora_bioinformatics_fix_critter() {
+function drush_islandora_bioinformatics_fix_critter_models() {
 
   module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
   $qp = new IslandoraSolrQueryProcessor();
-  $query = 'PID:vre\:mnpl-specimen-Key*';
+  $query = 'PID:vre\:mnpl-specimen*';
 //  $query = 'PID:*';
 //  drush_print("Query: \"$query\"");
   $qp->buildAndExecuteQuery($query);
@@ -58,12 +58,12 @@ function drush_islandora_bioinformatics_fix_critter() {
         case('Sponge'):
         case('Coral'):
         case('Algae'):
-          $cmodel = 'islandora:' . strtolower($critter['type']) . '_cmodel';
           $collection = 'islandora:' . strtolower($critter['type']) . '_collection';
+          $cmodel = 'islandora:invertebrate_cmodel';
           break;
         default:
           $cmodel = 'islandora:specimen_cmodel';
-          $cmodel = 'islandora:specimen_collection';
+          $collection= 'islandora:specimen_collection';
           break;
       }
 
