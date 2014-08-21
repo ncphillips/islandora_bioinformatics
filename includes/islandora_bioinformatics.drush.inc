@@ -26,30 +26,23 @@ function islandora_bioinformatics_drush_command() {
 function drush_islandora_bioinformatics_fix_critter_models() {
 
   module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
-  $qp = new IslandoraSolrQueryProcessor();
-  $query = 'PID:vre\:mnpl-specimen*';
-//  $query = 'PID:*';
-//  drush_print("Query: \"$query\"");
-  $qp->buildAndExecuteQuery($query);
-
-  $per_page = $qp->solrLimit;
-//  drush_print("Matches per Page: $per_page");
-
-  $num_found = $qp->islandoraSolrResult['response']['numFound'];
-//  drush_print("Matches: $num_found");
-
-  $num_pages = (int)ceil($num_found / $per_page);
-//  drush_print("Pages: $num_pages");
+  $qs = new IslandoraSolrQueryset();
+  $qs->fields = array(
+    'PID' => array(
+      'vre:mnpl-specimen*',
+//      '#not' => array(
+//        'RELS_EXT_hasParentModel_uri_ms' => array('*'),
+//      ),
+    ),
+  );
+  $a = $qs->objects;
+  $num_pages = $qs->num_pages;
 
 
   for ($i = 0; $i < $num_pages; $i++){
-    $_GET['page'] = $i;
-    $qp->buildAndExecuteQuery($query);
-    $objects =  $qp->islandoraSolrResult['response']['objects'];
+    $qs->page = $i;
 
-    $j = $i*$per_page;
-    foreach($objects as $o_array){
-      $id = $o_array['PID'];
+    foreach($qs->objects as $id){
 
       drush_print($id);
       $object = islandora_object_load($id);
@@ -88,7 +81,6 @@ function drush_islandora_bioinformatics_fix_critter_models() {
 //        drush_print("\t\t$tid");
 //      }
 //      drush_print("\tCollections");
-      $j++;
     }
   }
 }
