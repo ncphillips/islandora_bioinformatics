@@ -226,10 +226,10 @@ function islandora_bioinformatics_form_islandora_related_islandora_assay_run_cmo
     $form['content_table_select']['actions']['submit']['#disabled'] = TRUE;
   }
 
-//  $form['content_table_select']['actions']['selected']['#options'] = $protocols;
-//  $form['content_table_select']['actions']['selected']['#title'] = 'Protocols';
-//  $form['content_table_select']['actions']['submit']['#value'] = 'Run Protocol';
-//  $form['content_table_select']['actions']['submit']['#submit'][] = 'run_protocol';
+  $form['content_table_select']['actions']['selected']['#options'] = $protocols;
+  $form['content_table_select']['actions']['selected']['#title'] = 'Protocols';
+  $form['content_table_select']['actions']['submit']['#value'] = 'Run Protocol';
+  $form['content_table_select']['actions']['submit']['#submit'][] = 'run_protocol';
 
 
 }
