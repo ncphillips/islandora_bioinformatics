@@ -30,9 +30,9 @@ function drush_islandora_bioinformatics_fix_critter_models() {
   $qs->fields = array(
     'PID' => array(
       'vre:mnpl-specimen*',
-//      '#not' => array(
-//        'RELS_EXT_hasParentModel_uri_ms' => array('*'),
-//      ),
+      '#not' => array(
+        'RELS_EXT_hasParentModel_uri_ms' => array('*'),
+      ),
     ),
   );
   $a = $qs->objects;
