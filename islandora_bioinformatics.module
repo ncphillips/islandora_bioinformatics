@@ -172,7 +172,12 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
       ),
     )
   );
-
+  // Assay Protocol
+  $cm['Assay Run Protocol'] = array(
+    '#dscm' => true,
+  );
+  $cm['Fraction Run Protocol'] = array('#parent' => 'islandora:assay_run_protocol_cmodel');
+  $cm['Compound Run Protocol'] = array('#parent' => 'islandora:assay_run_protocol_cmodel');
   // Genesequence
   $cm['Genesequence'] = array(
     '#relationships' => array(
@@ -216,19 +221,19 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
 
   // Collections Info
   $collections = array(
-    'person_collection'       => array('parent' => 'islandora:root',                   'label' => 'People Collection'),
-    'project_collection'      => array('parent' => 'islandora:root',                   'label' => 'Project Collection'),
-    'lab_protocol_collection' => array('parent' => 'islandora:root',                   'label' => 'Lab Protocol Collection'),
-//    'lab_object_collection'   => array('parent' => 'islandora:root',                   'label' => 'Lab Objects Collection'),
-    'genesequence_collection' => array('parent' => 'islandora:root',  'label' => 'Genesequence Collection'),
-    'lcms_collection'         => array('parent' => 'islandora:root',  'label' => 'LCMS Collection'),
+    'person_collection'       => array('parent' => 'islandora:root',                   'label' => 'People'),
+    'project_collection'      => array('parent' => 'islandora:root',                   'label' => 'Projects'),
+    'protocol_collection'     => array('parent' => 'islandora:root',                   'label' => 'Protocols'),
+      'compound_run_protocol_collection' => array('parent' => 'islandora:protocol_collection',    'label' => 'Compound Run Protocols'),
+      'fraction_run_protocol_collection' => array('parent' => 'islandora:protocol_collection',    'label' => 'Fraction Run Protocols'),
+    'genesequence_collection' => array('parent' => 'islandora:root',  'label' => 'Genesequences'),
     'specimen_collection'     => array('parent' => 'islandora:root',  'label' => 'Specimen Collection'),
-      'microbe_collection'      => array('parent' => 'islandora:specimen_collection',    'label' => 'Microbe Collection'),
-      'invertebrate_collection' => array('parent' => 'islandora:specimen_collection',    'label' => 'Invertebrate Collection'),
-//          'algae_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Algae Collection'),
-//          'coral_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Coral Collection'),
-//          'sponge_collection'       => array('parent' => 'islandora:invertebrate_collection','label' => 'Sponge Collection'),
-//          'tunicate_collection'     => array('parent' => 'islandora:invertebrate_collection','label' => 'Tunicate Collection'),
+      'microbe_collection'      => array('parent' => 'islandora:specimen_collection',    'label' => 'Microbes'),
+      'invertebrate_collection' => array('parent' => 'islandora:specimen_collection',    'label' => 'Invertebrates'),
+          'algae_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Algae'),
+          'coral_collection'        => array('parent' => 'islandora:invertebrate_collection','label' => 'Coral'),
+          'sponge_collection'       => array('parent' => 'islandora:invertebrate_collection','label' => 'Sponges'),
+          'tunicate_collection'     => array('parent' => 'islandora:invertebrate_collection','label' => 'Tunicates'),
   );
 
   // Create Objects
@@ -249,7 +254,7 @@ function islandora_bioinformatics_islandora_required_objects(IslandoraTuque  $co
     $collection->ingestDatastream($collection_policy);
 
     // Add collection to the list of objects.
-//    $objects[] = $collection;
+    $objects[] = $collection;
   }
 
   return array(
@@ -281,13 +286,17 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
     'Specimen EML Form' => array(
       'form_file' => "$module_path/xml/forms/specimen_eml_form.xml"
     ),
-//    'Microbial EML Form' => array(
-//      'form_file' => "$module_path/xml/forms/microbial_form.xml",
-//    ),
-//
-//    'Invertebrate EML Form' => array(
-//      'form_file' => "$module_path/xml/forms/invertebrate_form.xml"
-//    ),
+    // The next two use the same form as the Specimen, but I still made the
+    // form ID's incase we ever want to change those forms in the future.
+    'Microbe EML Form' => array(
+      'form_file' => "$module_path/xml/forms/specimen_eml_form.xml",
+    ),
+
+    'Invertebrate EML Form' => array(
+      'form_file' => "$module_path/xml/forms/specimen_eml_form.xml"
+    ),
+
+    // These two forms are identical. Same thing as the Specimen/Microbe/Invert.
     'Compound Run Form' => array(
       'form_file' => "$module_path/xml/forms/assay_run_form.xml"
     ),
@@ -298,6 +307,18 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
     'LCMS Form' => array(
       'form_file' => "$module_path/xml/forms/lcms_form.xml",
     ),
+
+    'Fraction Run Protocol Form' => array(
+      'form_file' => "$module_path/xml/forms/assay_run_protocol_form.xml",
+    ),
+
+    'Compound Run Protocol Form' => array(
+      'form_file' => "$module_path/xml/forms/assay_run_protocol_form.xml",
+    ),
+
+    'Genesequence Form' => array(
+      'form_file' => "$module_path/xml/forms/genesequence_form.xml",
+    )
   );
 
   return $fb_forms;

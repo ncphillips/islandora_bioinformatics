@@ -360,3 +360,46 @@ function critter_to_array($specimen_id){
   );
   return $array;
 }
+
+
+function assay_run_protocol_to_array($arp){
+  if(!is_object($arp)){
+    $arp = islandora_object_load($arp);
+  }
+
+  $ns = "eml://ecoinformatics.org/eml-2.1.1";
+
+  $eml = array(
+    'title' => '',
+    'creator' => '',
+    'contact' => '',
+    'methods' => array(),
+    'project' => array(),
+  );
+  $xml = new SimpleXMLElement($arp['PROTOCOL']->content);
+  $xml = $xml->children($ns);
+
+
+  if(is_object($xml)){
+    $xml = $xml->dataset;
+    $eml['title'] = (string)$xml->title;
+
+    if (is_object($xml->creator)){
+      $eml['creator'] = (string)$xml->creator->organizationName;
+    }
+
+    if (is_object($xml->contact)){
+      $eml['creator'] = (string)$xml->creator->organizationName;
+    }
+
+    if (is_object($xml->methods)){
+      foreach($xml->methods->methodStep as $method_step){
+        $eml['methods'][] = array(
+          'title' => (string)$method_step->description->section->title,
+          'description' => (string)$method_step->description->section->para,
+        );
+      }
+    }
+  }
+  return $eml;
+}

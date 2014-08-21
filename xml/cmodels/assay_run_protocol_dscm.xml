@@ -3,5 +3,5 @@
     <dsTypeModel ID="RELS-EXT"> <form FORMAT_URI="info:fedora/fedora-system:FedoraRELSExt-1.0" MIME="text/xml"/> </dsTypeModel>
     <dsTypeModel ID="RELS-INT" optional="true"> <form FORMAT_URI="info:fedora/fedora-system:FedoraRELSInt-1.0" MIME="application/rdf+xml" /> </dsTypeModel>
     <dsTypeModel ID="MODS"> <!-- This datastream holds the descriptive metadata --> <form MIME="text/xml" /> </dsTypeModel>
-    <dsTypeModel ID="ASSAY-RUN"> <form MIME="text/xml"/> </dsTypeModel>
+    <dsTypeModel ID="PROTOCOL"> <form MIME="text/xml"/> </dsTypeModel>
 </dsCompositeModel>
