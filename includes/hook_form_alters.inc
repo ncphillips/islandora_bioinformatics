@@ -139,9 +139,9 @@ function islandora_bioinformatics_form_islandora_related_islandora_genesequence_
 
 
 function islandora_bioinformatics_form_islandora_related_islandora_assay_run_cmodel_objects_form_alter(&$form, &$form_state) {
-  unset($form['View']);
-  unset($form['Ingest']);
-  unset($form['Add']);
+//  unset($form['View']);
+//  unset($form['Ingest']);
+//  unset($form['Add']);
   $object = !empty($form_state['islandora']['object']) ? $form_state['islandora']['object'] : null;
   $assay_runs = !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
 

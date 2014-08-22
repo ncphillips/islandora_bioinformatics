@@ -35,6 +35,8 @@ function drush_islandora_bioinformatics_fix_critter_models() {
       ),
     ),
   );
+  drush_print(sizeof($qs->objects));
+
   $a = $qs->objects;
   $num_pages = $qs->num_pages;
 

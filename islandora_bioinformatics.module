@@ -339,9 +339,10 @@ function islandora_bioinformatics_islandora_islandora_project_cmodel_related_obj
   $count = 0;
 
   // Find and iterate through all relationships.
-  foreach($page_state['subject_relationships'] as $rel) {
+  foreach($page_state['relationships'] as $rel) {
     // Remove relationships if the object is a person.
-    if($rel['object']['value'] == 'islandora:person_cmodel') {
+    if($rel['object']['value'] == 'islandora:person_cmodel'
+      or $rel['subject']['value'] == 'islandora:person_cmodel') {
       unset($page_state['subject_relationships'][$count]);
     }
     $count++;
