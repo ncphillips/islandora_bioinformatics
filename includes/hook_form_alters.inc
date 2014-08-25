@@ -8,7 +8,7 @@
  * @param $form_state
  * @return mixed
  */
-function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmodel_objects_form_alter(&$form, &$form_state) {
+function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmodel_content_form_alter(&$form, &$form_state) {
   module_load_include('inc', 'islandora_bioinformatics', 'includes/xml_to_array');
 
   $specimens = $form_state['islandora']['related_objects_ids'];
@@ -21,13 +21,10 @@ function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmod
     'genus_species' => 'Genus <em>species</em>',
     'cmodel' => 'Model',
   );
-  // Merge with the original headers.
-//  $header = array_merge($header, $form['content_table_select']['table']['#header']) ;
-
-  // Unset a couple we don't want.
-  unset($header['id']);
 
   $options = &$form['content_table_select']['table']['#options'];
+
+  $form['solr_filters'];
 
   foreach ($options as $specimen_id => &$rows) {
     $specimen = islandora_object_load($specimen_id);
@@ -66,7 +63,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_specimen_cmod
  * WHERE  FORM_ID         = "islandora_related_RELATED_CMODEL_objects_form"
  * AND    RELATED_CMODEL  = "islandora:person_cmodel"
  */
-function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel_objects_form_alter(&$form, &$form_state) {
+function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel_content_form_alter(&$form, &$form_state) {
   module_load_include('inc', 'islandora_bioinformatics', 'includes/mads_to_array');
 
   unset($form['Ingest']);
@@ -107,7 +104,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_person_cmodel
 }
 
 
-function islandora_bioinformatics_form_islandora_related_islandora_genesequence_cmodel_objects_form_alter(&$form, &$form_state) {
+function islandora_bioinformatics_form_islandora_related_islandora_genesequence_cmodel_content_form_alter(&$form, &$form_state) {
   unset($form['Add']);
   unset($form['View']);
   $sequences= !empty($form_state['islandora']['related_objects_ids']) ? $form_state['islandora']['related_objects_ids'] : array();
@@ -138,7 +135,7 @@ function islandora_bioinformatics_form_islandora_related_islandora_genesequence_
 }
 
 
-function islandora_bioinformatics_form_islandora_related_islandora_assay_run_cmodel_objects_form_alter(&$form, &$form_state) {
+function islandora_bioinformatics_form_islandora_related_islandora_assay_run_cmodel_content_form_alter(&$form, &$form_state) {
 //  unset($form['View']);
 //  unset($form['Ingest']);
 //  unset($form['Add']);

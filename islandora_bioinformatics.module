@@ -326,7 +326,7 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
 
 
 /**
- * Implements hook_islandora_OBJECT_CMODEL_related_objects_page_alter()
+ * Implements hook_islandora_OBJECT_CMODEL_related_content_page_alter()
  *
  * Where OBJECT_CMODEL = islandora:project_cmodel
  *
@@ -335,7 +335,7 @@ function islandora_bioinformatics_islandora_xml_form_builder_forms() {
  * Altering the Related Content page for Project's to exclude relationships
  * towards the Person CModel.
  */
-function islandora_bioinformatics_islandora_islandora_project_cmodel_related_objects_page_alter(&$page,  &$page_state) {
+function islandora_bioinformatics_islandora_islandora_project_cmodel_related_content_page_alter(&$page,  &$page_state) {
   $count = 0;
 
   // Find and iterate through all relationships.
