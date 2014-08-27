@@ -20,6 +20,7 @@ module_load_include('inc',  'islandora_bioinformatics',  'includes/page_callback
 
 // Hook Form Alters
 module_load_include('inc',  'islandora_bioinformatics',  'includes/hook_form_alters');
+module_load_include('inc',  'islandora_bioinformatics',  'includes/hook_related_content_ingest_alters');
 module_load_include('inc',  'islandora_bioinformatics',  'includes/hook_xml_form_builder_form_associations');
 
 
